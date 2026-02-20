@@ -13,6 +13,7 @@ param adminUsername string
 @secure()
 @description('Admin password for jumpbox')
 param adminPassword string
+ 
 
 @description('Network interface name')
 param nicName string
@@ -76,3 +77,10 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-07-01' = {
 
 output vmId string = vm.id
 output privateIp string = nic.properties.ipConfigurations[0].properties.privateIPAddress
+
+// VM extension removed: to avoid template escaping/immutability issues.
+// Apply bootstrap manually via `az vm run-command invoke` or add a properly-escaped extension later.
+
+// NOTE: cloud-init file remains in infra/scripts/jumpbox-cloud-init.yaml
+// We intentionally do not set `osProfile.customData` on updateable VMs (property is immutable).
+// To apply the bootstrap on existing VMs, use `az vm run-command invoke` or add a CustomScript extension separately.
