@@ -28,7 +28,7 @@ Test agent (simple smoke test)
 - A small agent is included to verify the Foundry account and model endpoint. The agent does a single request and prints the response.
 - Typical steps (adapt paths to your environment):
   ```bash
-  cd agents/simple-agent
+  cd agents/pb-foundry-bing-agent
   python -m venv .venv
   source .venv/bin/activate
   pip install -r requirements.txt
@@ -59,8 +59,12 @@ License
 
 This folder is reserved for agent code and runtime artifacts.
 
-Suggested future layout:
+Suggested layout and included agents:
 
-- `pb-foundry-bing-agent/` Foundry-only runtime (no M365 channel)
+- `pb-foundry-bing-agent/` Foundry-only runtime (no M365 channel) — included in this repo.
 - `shared/` for common helpers
 - `tests/` for integration and smoke tests
+
+Included agents
+
+- `pb-foundry-bing-agent`: a Foundry-only test/runtime located under `agents/pb-foundry-bing-agent` — contains a small test agent, `scripts/run_agent.py`, and supporting runtime code. Use it to validate Foundry provisioning and runtime connectivity.
