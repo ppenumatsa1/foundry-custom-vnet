@@ -1,0 +1,106 @@
+{
+  "$schema": "https://aka.ms/azure-dev/parameters.json",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "resourceGroupName": {
+      "value": "${AZURE_RESOURCE_GROUP}"
+    },
+    "location": {
+      "value": "${AZURE_LOCATION}"
+    },
+    "namePrefix": {
+      "value": "aifndcustomvnet"
+    },
+    "vnetName": {
+      "value": "aifndcustomvnet-vnet"
+    },
+    "existingVnetResourceId": {
+      "value": "${EXISTING_VNET_RESOURCE_ID}"
+    },
+    "agentSubnetName": {
+      "value": "snet-agent"
+    },
+    "peSubnetName": {
+      "value": "snet-private-endpoints"
+    },
+    "managementSubnetName": {
+      "value": "snet-management"
+    },
+    "bastionSubnetName": {
+      "value": "AzureBastionSubnet"
+    },
+    "firewallSubnetName": {
+      "value": "AzureFirewallSubnet"
+    },
+    "aiSearchResourceId": {
+      "value": ""
+    },
+    "azureStorageAccountResourceId": {
+      "value": ""
+    },
+    "azureCosmosDBAccountResourceId": {
+      "value": ""
+    },
+    "dnsZonesSubscriptionId": {
+      "value": ""
+    },
+    "existingDnsZones": {
+      "value": {
+        "privatelink.services.ai.azure.com": "",
+        "privatelink.openai.azure.com": "",
+        "privatelink.cognitiveservices.azure.com": "",
+        "privatelink.search.windows.net": "",
+        "privatelink.blob.core.windows.net": "",
+        "privatelink.documents.azure.com": ""
+      }
+    },
+    "foundryAccountName": {
+      "value": "aifndcustomvnetacct"
+    },
+    "foundryProjectName": {
+      "value": "private-project"
+    },
+    "foundryProjectDisplayName": {
+      "value": "Private Project"
+    },
+    "foundryProjectDescription": {
+      "value": "Private AI Foundry project in custom VNet"
+    },
+    "projectCapHost": {
+      "value": "caphostproj"
+    },
+    "vnetAddressPrefix": {
+      "value": "10.60.0.0/16"
+    },
+    "agentSubnetPrefix": {
+      "value": "10.60.0.0/24"
+    },
+    "peSubnetPrefix": {
+      "value": "10.60.1.0/24"
+    },
+    "managementSubnetPrefix": {
+      "value": "10.60.2.0/24"
+    },
+    "bastionSubnetPrefix": {
+      "value": "10.60.3.0/26"
+    },
+    "firewallSubnetPrefix": {
+      "value": "10.60.4.0/26"
+    },
+    "jumpboxAdminUsername": {
+      "value": "azureuser"
+    },
+    "jumpboxAdminPassword": {
+      "value": "${JUMPBOX_ADMIN_PASSWORD}"
+    },
+    "enableFirewall": {
+      "value": true
+    },
+    "deployModel": {
+      "value": true
+    },
+    "deployCapabilityHost": {
+      "value": false
+    }
+  }
+}

@@ -1,0 +1,6 @@
+name: aifoundry-new-byo-vnet
+metadata:
+  template: private-vnet-ai-foundry
+infra:
+  provider: bicep
+  path: infra/azd
