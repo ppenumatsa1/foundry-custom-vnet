@@ -9,6 +9,8 @@ param foundryAccountName = 'aifndbyovnetacct'
 param foundryProjectName = 'private-project'
 param foundryProjectDisplayName = 'Private Project'
 param foundryProjectDescription = 'Private AI Foundry project in BYO VNet'
+param foundryPortalAllowedIpRangesCsv = ''
+param foundryNetworkAclsBypass = 'None'
 
 // Optional BYO paths
 param existingVnetResourceId = ''

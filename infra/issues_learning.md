@@ -84,9 +84,93 @@ This file captures key issues encountered during implementation and provisioning
   - For private-by-default environments, treat outbound internet as an explicit design decision.
   - If reusing Azure Firewall for egress, both UDR and firewall allow rules are required.
 
+## 10) VM bootstrap and immutable `customData` behavior
+
+- **Symptom**: Deployment failed on jumpbox update with `PropertyChangeNotAllowed` targeting `osProfile.customData`.
+- **Root cause**: For existing VMs, `osProfile.customData` is immutable and cannot be changed by subsequent deployments.
+- **Fix**:
+  - Reverted VM template to password-based auth as requested.
+  - Removed mutable `customData` updates from the VM resource path.
+  - Applied required package installation via `az vm run-command invoke` for the current VM lifecycle.
+- **Learning**:
+  - Use cloud-init/customData only for first-create semantics.
+  - For post-create changes, use VM extensions, run-command, or pre-baked images (Azure Image Builder + SIG).
+
+## 11) Agent runtime validation from jumpbox
+
+- **Symptom**: Initial test setup failed due to Python version mismatch (`Package 'foundry-bing-agent' requires a different Python: 3.10.12 not in '>=3.11'`).
+- **Root cause**: Jumpbox image had Python 3.10 by default while package metadata expected 3.11+.
+- **Fix**:
+  - Updated package compatibility to support Python 3.10 in the active branch.
+  - Recreated venv on jumpbox, installed editable package, and ran tests.
+- **Outcome**:
+  - `pytest` passed (`3 passed`).
+  - Agent prompt flow worked end-to-end (capital/weather query), with occasional `429 Too Many Requests` on follow-up live calls (quota/rate-limit, not network).
+- **Learning**:
+  - Validate runtime Python versions on jumpbox early.
+  - Separate quota/rate-limit errors from networking/RBAC root-cause analysis.
+
+## 12) Controlled public portal access for Foundry (selected IP only)
+
+- **Goal**: Keep Storage/Search/Cosmos private over PE while allowing Foundry portal/API access from a specific public IP.
+- **Bicep changes**:
+  - Added `foundryPortalAllowedIpRangesCsv` parameter and pass-through in `main.bicep`, `main.subscription.bicep`, and `infra/azd/main.bicep`.
+  - Added `foundryNetworkAclsBypass` parameter (`None`/`AzureServices`) to support portal blade service-to-service behavior.
+  - Added azd env mappings in `infra/azd/main.parameters.json`:
+    - `FOUNDRY_PORTAL_ALLOWED_IP_RANGES`
+    - `FOUNDRY_NETWORK_ACLS_BYPASS`
+- **Symptom during rollout**:
+  - Deployment failed with `BadRequest: Invalid IP address or range 67.198.106.149/32`.
+- **Root cause**:
+  - This account/network ACL path accepted a single IPv4 entry format for the configured rule and rejected `/32` in this context.
+- **Fix**:
+  - Set allow-list to `67.198.106.149` (without `/32`).
+  - Set `FOUNDRY_NETWORK_ACLS_BYPASS=AzureServices`.
+  - Re-ran preview and provision successfully.
+- **Learning**:
+  - Validate accepted IP rule format per resource/API behavior.
+  - Some Foundry portal blades (for example Agents) may require trusted Azure-service bypass even when client IP is allow-listed.
+
+## 13) New Foundry portal Agents blade still denied under network isolation
+
+- **Symptom**:
+  - Foundry portal loaded and other blades (for example Models) were visible.
+  - Agents blade failed consistently with: `Access denied due to Virtual Network/Firewall rules`.
+  - Request IDs were captured from the portal banner for diagnostics.
+- **Observed configuration at time of issue**:
+  - `publicNetworkAccess: Enabled`
+  - `networkAcls.defaultAction: Deny`
+  - `networkAcls.ipRules: [67.198.106.149]`
+  - `networkAcls.bypass: AzureServices` (confirmed in resource JSON view / newer ARM API projection)
+  - Storage/Search/Cosmos remained `publicNetworkAccess: Disabled`.
+- **Root cause assessment**:
+  - This behavior aligns with current documented limitations for **Foundry projects + Agent service** in the **new Foundry portal experience** when network isolation is enabled.
+  - In contrast, SDK/CLI runtime flows continued to work, confirming this is not a broad data-plane outage.
+- **Validation performed**:
+  - Local and jumpbox agent runtime calls succeeded.
+  - Internet path to Search data plane remained blocked even with valid admin key (`publicNetworkAccess: Disabled`), confirming private posture for dependencies.
+  - Resource API projections differed by API version for `networkAcls.bypass` (older projection showed null; newer resource JSON showed `AzureServices`).
+- **Current workaround**:
+  - Use classic Foundry experience and/or SDK/CLI for agent operations while keeping network isolation enabled.
+  - Keep selected-IP + default deny + trusted-services exception configuration on Foundry account.
+- **Learning**:
+  - Treat New Foundry portal Agent blade behavior as a product-surface limitation under isolated networking, not necessarily as misconfigured VNet/PE.
+  - Always corroborate with SDK/CLI runtime tests and resource JSON from the target API version.
+
+## Current snapshot (end-to-end)
+
+- Provisioning and core runtime paths are functional:
+  - `azd provision --preview` and `azd provision` complete successfully.
+  - Private endpoints remain in place for Storage/Search/Cosmos.
+  - Jumpbox-based agent tests pass.
+- Open follow-up:
+  - Agents blade denial is currently reproducible in the New Foundry portal experience under the present network-isolated setup.
+  - If blade-specific denial persists, capture portal request ID and resource diagnostic logs to isolate exact control-plane dependency.
+
 ## Follow-up actions (recommended)
 
 1. Add explicit Foundry project connection resources for Storage/Search/Cosmos.
 2. Re-enable `deployCapabilityHost=true` once connection dependencies are provisioned in the same workflow.
 3. If controlled egress routing is required in Phase 1, move subnet route-table association to a separate post-network deployment step.
 4. Keep API versions periodically reviewed against provider-supported versions in target subscription/region.
+5. Add a small diagnostics runbook for Foundry portal blade failures (required logs, request IDs, network ACL checks, and bypass setting verification).

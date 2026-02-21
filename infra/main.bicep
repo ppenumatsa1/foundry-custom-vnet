@@ -39,6 +39,12 @@ param foundryProjectDisplayName string = 'Default Project'
 @description('Foundry project description')
 param foundryProjectDescription string = 'Private network AI Foundry project'
 
+@description('Optional comma-separated public IPv4/CIDR allow-list for Foundry portal/API access. Empty keeps Foundry fully private.')
+param foundryPortalAllowedIpRangesCsv string = ''
+
+@description('Network ACL bypass mode for Foundry account (None or AzureServices).')
+param foundryNetworkAclsBypass string = 'None'
+
 @description('Project capability host name')
 param projectCapHost string = 'caphostproj'
 
@@ -185,6 +191,8 @@ module foundry 'modules/foundry/account-project.bicep' = {
     projectName: foundryProjectName
     projectDisplayName: foundryProjectDisplayName
     projectDescription: foundryProjectDescription
+    foundryPortalAllowedIpRangesCsv: foundryPortalAllowedIpRangesCsv
+    foundryNetworkAclsBypass: foundryNetworkAclsBypass
   }
 }
 

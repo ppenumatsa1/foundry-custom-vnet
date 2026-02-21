@@ -57,7 +57,26 @@ azd init --template .
 azd env set AZURE_LOCATION <deployment-location>
 azd env set AZURE_RESOURCE_GROUP rg-foundry-custom-vnet
 azd env set JUMPBOX_ADMIN_PASSWORD '<strong-password>'
+# Optional: allow Foundry portal/API only from selected public IPs (comma-separated CIDRs)
+# Example for a single IP: <your-public-ip>/32
+azd env set FOUNDRY_PORTAL_ALLOWED_IP_RANGES '<your-public-ip>/32'
 azd provision
+```
+
+## Optional: Foundry portal public access from selected IPs
+
+- By default, Foundry public access remains disabled.
+- Set `foundryPortalAllowedIpRangesCsv` (or `FOUNDRY_PORTAL_ALLOWED_IP_RANGES` in `azd`) to enable public access only from specified IPv4/CIDR ranges.
+- Keep Storage, Search, and Cosmos on private endpoints as-is.
+
+Examples:
+
+```bicep
+param foundryPortalAllowedIpRangesCsv = '' // fully private (default)
+```
+
+```bicep
+param foundryPortalAllowedIpRangesCsv = '203.0.113.10/32,198.51.100.0/24'
 ```
 
 ## New vs Existing (BYO) modes

@@ -26,18 +26,38 @@ Provisioning summary
 Test agent (simple smoke test)
 
 - A small agent is included to verify the Foundry account and model endpoint. The agent does a single request and prints the response.
-- Typical steps (adapt paths to your environment):
+- Validated workflow (from Bastion + jumpbox):
+
   ```bash
-  cd agents/pb-foundry-bing-agent
-  python -m venv .venv
+  RG="rg-foundry-custom-vnet"
+  VM_NAME="aifndcustomvnet-jump-f7ecgg"
+  BASTION_NAME="aifndcustomvnet-bas-f7ecgg"
+
+  VM_ID=$(az vm show -g "$RG" -n "$VM_NAME" --query id -o tsv)
+  az network bastion ssh \
+    --name "$BASTION_NAME" \
+    --resource-group "$RG" \
+    --target-resource-id "$VM_ID" \
+    --auth-type password \
+    --username azureuser
+
+  # Inside jumpbox shell
+  cd ~
+  git clone https://github.com/ppenumatsa1/foundry-custom-vnet.git
+  cd foundry-custom-vnet/agents/pb-foundry-bing-agent
+  python3 -m venv .venv
   source .venv/bin/activate
-  pip install -r requirements.txt
-  # Set environment variables (Foundry endpoint, project and agent IDs)
-  export FOUNDRY_ENDPOINT="https://<your-foundry-account>.services.ai.azure.com"
-  export FOUNDRY_PROJECT_ID="private-project"
-  export FOUNDRY_AGENT_ID="<agent-id>"
-  python scripts/run_agent.py
+  python -m pip install --upgrade pip
+  python -m pip install -e .
+  python -m pytest -q
+  cp -n .env.example .env
+  # Set endpoint/agent values in .env
+  python scripts/run_agent.py "What is the capital of France? What is the weather there?"
   ```
+
+- Validated output:
+  - Unit tests: `3 passed`
+  - Agent runtime: returns a valid capital answer and weather response (tool-enabled path)
 
 Security & best practices (short)
 
