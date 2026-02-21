@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.40.2.10011",
-      "templateHash": "1060161567599851062"
+      "version": "0.37.4.10188",
+      "templateHash": "10830700927548186430"
     }
   },
   "parameters": {
@@ -98,6 +98,20 @@
       "defaultValue": "Private network AI Foundry project",
       "metadata": {
         "description": "Foundry project description"
+      }
+    },
+    "foundryPortalAllowedIpRangesCsv": {
+      "type": "string",
+      "defaultValue": "",
+      "metadata": {
+        "description": "Optional comma-separated public IPv4/CIDR allow-list for Foundry portal/API access. Empty keeps Foundry fully private."
+      }
+    },
+    "foundryNetworkAclsBypass": {
+      "type": "string",
+      "defaultValue": "None",
+      "metadata": {
+        "description": "Network ACL bypass mode for Foundry account (None or AzureServices)."
       }
     },
     "projectCapHost": {
@@ -275,7 +289,7 @@
   "resources": [
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('validate-existing-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -299,8 +313,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "8812326857842712593"
+              "version": "0.37.4.10188",
+              "templateHash": "2122988384152047062"
             }
           },
           "parameters": {
@@ -390,7 +404,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('network-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -453,8 +467,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "4596960806558450019"
+              "version": "0.37.4.10188",
+              "templateHash": "4386979536458751372"
             }
           },
           "parameters": {
@@ -573,7 +587,7 @@
             {
               "condition": "[not(parameters('useExistingVnet'))]",
               "type": "Microsoft.Resources/deployments",
-              "apiVersion": "2025-04-01",
+              "apiVersion": "2022-09-01",
               "name": "new-vnet",
               "properties": {
                 "expressionEvaluationOptions": {
@@ -621,8 +635,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.40.2.10011",
-                      "templateHash": "16853929843495428696"
+                      "version": "0.37.4.10188",
+                      "templateHash": "15353079719353782576"
                     }
                   },
                   "parameters": {
@@ -794,7 +808,7 @@
             {
               "condition": "[parameters('useExistingVnet')]",
               "type": "Microsoft.Resources/deployments",
-              "apiVersion": "2025-04-01",
+              "apiVersion": "2022-09-01",
               "name": "existing-vnet",
               "properties": {
                 "expressionEvaluationOptions": {
@@ -833,8 +847,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.40.2.10011",
-                      "templateHash": "16597989498054664448"
+                      "version": "0.37.4.10188",
+                      "templateHash": "1484925944337667602"
                     }
                   },
                   "parameters": {
@@ -932,31 +946,31 @@
           "outputs": {
             "vnetId": {
               "type": "string",
-              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2025-04-01').outputs.vnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2025-04-01').outputs.vnetId.value)]"
+              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2022-09-01').outputs.vnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2022-09-01').outputs.vnetId.value)]"
             },
             "vnetNameOut": {
               "type": "string",
-              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2025-04-01').outputs.vnetNameOut.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2025-04-01').outputs.vnetNameOut.value)]"
+              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2022-09-01').outputs.vnetNameOut.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2022-09-01').outputs.vnetNameOut.value)]"
             },
             "agentSubnetId": {
               "type": "string",
-              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2025-04-01').outputs.agentSubnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2025-04-01').outputs.agentSubnetId.value)]"
+              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2022-09-01').outputs.agentSubnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2022-09-01').outputs.agentSubnetId.value)]"
             },
             "peSubnetId": {
               "type": "string",
-              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2025-04-01').outputs.peSubnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2025-04-01').outputs.peSubnetId.value)]"
+              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2022-09-01').outputs.peSubnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2022-09-01').outputs.peSubnetId.value)]"
             },
             "managementSubnetId": {
               "type": "string",
-              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2025-04-01').outputs.managementSubnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2025-04-01').outputs.managementSubnetId.value)]"
+              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2022-09-01').outputs.managementSubnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2022-09-01').outputs.managementSubnetId.value)]"
             },
             "bastionSubnetId": {
               "type": "string",
-              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2025-04-01').outputs.bastionSubnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2025-04-01').outputs.bastionSubnetId.value)]"
+              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2022-09-01').outputs.bastionSubnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2022-09-01').outputs.bastionSubnetId.value)]"
             },
             "firewallSubnetId": {
               "type": "string",
-              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2025-04-01').outputs.firewallSubnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2025-04-01').outputs.firewallSubnetId.value)]"
+              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2022-09-01').outputs.firewallSubnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2022-09-01').outputs.firewallSubnetId.value)]"
             }
           }
         }
@@ -964,7 +978,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('dependencies-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -975,9 +989,9 @@
           "location": {
             "value": "[parameters('location')]"
           },
-          "storageAccountName": "[if(reference(resourceId('Microsoft.Resources/deployments', format('validate-existing-{0}', variables('shortSuffix'))), '2025-04-01').outputs.azureStorageExists.value, createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('validate-existing-{0}', variables('shortSuffix'))), '2025-04-01').outputs.azureStorageName.value), createObject('value', parameters('storageAccountName')))]",
-          "searchServiceName": "[if(reference(resourceId('Microsoft.Resources/deployments', format('validate-existing-{0}', variables('shortSuffix'))), '2025-04-01').outputs.aiSearchExists.value, createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('validate-existing-{0}', variables('shortSuffix'))), '2025-04-01').outputs.aiSearchName.value), createObject('value', parameters('searchServiceName')))]",
-          "cosmosAccountName": "[if(reference(resourceId('Microsoft.Resources/deployments', format('validate-existing-{0}', variables('shortSuffix'))), '2025-04-01').outputs.cosmosDBExists.value, createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('validate-existing-{0}', variables('shortSuffix'))), '2025-04-01').outputs.cosmosDBName.value), createObject('value', parameters('cosmosAccountName')))]",
+          "storageAccountName": "[if(reference(resourceId('Microsoft.Resources/deployments', format('validate-existing-{0}', variables('shortSuffix'))), '2022-09-01').outputs.azureStorageExists.value, createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('validate-existing-{0}', variables('shortSuffix'))), '2022-09-01').outputs.azureStorageName.value), createObject('value', parameters('storageAccountName')))]",
+          "searchServiceName": "[if(reference(resourceId('Microsoft.Resources/deployments', format('validate-existing-{0}', variables('shortSuffix'))), '2022-09-01').outputs.aiSearchExists.value, createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('validate-existing-{0}', variables('shortSuffix'))), '2022-09-01').outputs.aiSearchName.value), createObject('value', parameters('searchServiceName')))]",
+          "cosmosAccountName": "[if(reference(resourceId('Microsoft.Resources/deployments', format('validate-existing-{0}', variables('shortSuffix'))), '2022-09-01').outputs.cosmosDBExists.value, createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('validate-existing-{0}', variables('shortSuffix'))), '2022-09-01').outputs.cosmosDBName.value), createObject('value', parameters('cosmosAccountName')))]",
           "aiSearchResourceId": {
             "value": "[parameters('aiSearchResourceId')]"
           },
@@ -994,8 +1008,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "6344434231314602104"
+              "version": "0.37.4.10188",
+              "templateHash": "1675335581795254812"
             }
           },
           "parameters": {
@@ -1151,7 +1165,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('foundry-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -1173,6 +1187,12 @@
           },
           "projectDescription": {
             "value": "[parameters('foundryProjectDescription')]"
+          },
+          "foundryPortalAllowedIpRangesCsv": {
+            "value": "[parameters('foundryPortalAllowedIpRangesCsv')]"
+          },
+          "foundryNetworkAclsBypass": {
+            "value": "[parameters('foundryNetworkAclsBypass')]"
           }
         },
         "template": {
@@ -1181,8 +1201,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "4635001103371413587"
+              "version": "0.37.4.10188",
+              "templateHash": "3888809402566259390"
             }
           },
           "parameters": {
@@ -1215,7 +1235,37 @@
               "metadata": {
                 "description": "Project description"
               }
+            },
+            "foundryPortalAllowedIpRangesCsv": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Optional comma-separated public IPv4/CIDR allow-list for Foundry portal/API access. Empty keeps Foundry fully private."
+              }
+            },
+            "foundryNetworkAclsBypass": {
+              "type": "string",
+              "defaultValue": "None",
+              "allowedValues": [
+                "None",
+                "AzureServices"
+              ],
+              "metadata": {
+                "description": "Network ACL bypass mode for Foundry account. Use AzureServices when portal blades (for example Agents) require trusted Azure service access."
+              }
             }
+          },
+          "variables": {
+            "copy": [
+              {
+                "name": "foundryPortalAllowedIpAclRules",
+                "count": "[length(variables('foundryPortalAllowedIpRules'))]",
+                "input": {
+                  "value": "[trim(variables('foundryPortalAllowedIpRules')[copyIndex('foundryPortalAllowedIpAclRules')])]"
+                }
+              }
+            ],
+            "foundryPortalAllowedIpRules": "[if(empty(parameters('foundryPortalAllowedIpRangesCsv')), createArray(), split(parameters('foundryPortalAllowedIpRangesCsv'), ','))]"
           },
           "resources": [
             {
@@ -1232,7 +1282,12 @@
               },
               "properties": {
                 "customSubDomainName": "[parameters('accountName')]",
-                "publicNetworkAccess": "Disabled",
+                "publicNetworkAccess": "[if(greater(length(variables('foundryPortalAllowedIpAclRules')), 0), 'Enabled', 'Disabled')]",
+                "networkAcls": {
+                  "defaultAction": "Deny",
+                  "bypass": "[parameters('foundryNetworkAclsBypass')]",
+                  "ipRules": "[variables('foundryPortalAllowedIpAclRules')]"
+                },
                 "allowProjectManagement": true
               }
             },
@@ -1288,7 +1343,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('private-connectivity-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -1300,22 +1355,22 @@
             "value": "[parameters('location')]"
           },
           "vnetId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2025-04-01').outputs.vnetId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.vnetId.value]"
           },
           "peSubnetId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2025-04-01').outputs.peSubnetId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.peSubnetId.value]"
           },
           "aiFoundryAccountId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2025-04-01').outputs.accountId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2022-09-01').outputs.accountId.value]"
           },
           "storageAccountId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2025-04-01').outputs.storageId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2022-09-01').outputs.storageId.value]"
           },
           "searchServiceId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2025-04-01').outputs.searchId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2022-09-01').outputs.searchId.value]"
           },
           "cosmosAccountId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2025-04-01').outputs.cosmosId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2022-09-01').outputs.cosmosId.value]"
           },
           "namePrefix": {
             "value": "[variables('shortSuffix')]"
@@ -1333,8 +1388,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "11635943254799759179"
+              "version": "0.37.4.10188",
+              "templateHash": "8992724729150974967"
             }
           },
           "parameters": {
@@ -1742,7 +1797,7 @@
             {
               "condition": "[not(empty(variables('aiServicesDnsZoneRG')))]",
               "type": "Microsoft.Resources/deployments",
-              "apiVersion": "2025-04-01",
+              "apiVersion": "2022-09-01",
               "name": "[format('dns-link-aiservices-{0}', parameters('namePrefix'))]",
               "subscriptionId": "[variables('resolvedDnsZonesSubscriptionId')]",
               "resourceGroup": "[variables('aiServicesDnsZoneRG')]",
@@ -1768,8 +1823,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.40.2.10011",
-                      "templateHash": "3501376025035974394"
+                      "version": "0.37.4.10188",
+                      "templateHash": "7629146954109041033"
                     }
                   },
                   "parameters": {
@@ -1818,7 +1873,7 @@
             {
               "condition": "[not(empty(variables('openAiDnsZoneRG')))]",
               "type": "Microsoft.Resources/deployments",
-              "apiVersion": "2025-04-01",
+              "apiVersion": "2022-09-01",
               "name": "[format('dns-link-openai-{0}', parameters('namePrefix'))]",
               "subscriptionId": "[variables('resolvedDnsZonesSubscriptionId')]",
               "resourceGroup": "[variables('openAiDnsZoneRG')]",
@@ -1844,8 +1899,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.40.2.10011",
-                      "templateHash": "3501376025035974394"
+                      "version": "0.37.4.10188",
+                      "templateHash": "7629146954109041033"
                     }
                   },
                   "parameters": {
@@ -1894,7 +1949,7 @@
             {
               "condition": "[not(empty(variables('cognitiveDnsZoneRG')))]",
               "type": "Microsoft.Resources/deployments",
-              "apiVersion": "2025-04-01",
+              "apiVersion": "2022-09-01",
               "name": "[format('dns-link-cognitive-{0}', parameters('namePrefix'))]",
               "subscriptionId": "[variables('resolvedDnsZonesSubscriptionId')]",
               "resourceGroup": "[variables('cognitiveDnsZoneRG')]",
@@ -1920,8 +1975,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.40.2.10011",
-                      "templateHash": "3501376025035974394"
+                      "version": "0.37.4.10188",
+                      "templateHash": "7629146954109041033"
                     }
                   },
                   "parameters": {
@@ -1970,7 +2025,7 @@
             {
               "condition": "[not(empty(variables('searchDnsZoneRG')))]",
               "type": "Microsoft.Resources/deployments",
-              "apiVersion": "2025-04-01",
+              "apiVersion": "2022-09-01",
               "name": "[format('dns-link-search-{0}', parameters('namePrefix'))]",
               "subscriptionId": "[variables('resolvedDnsZonesSubscriptionId')]",
               "resourceGroup": "[variables('searchDnsZoneRG')]",
@@ -1996,8 +2051,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.40.2.10011",
-                      "templateHash": "3501376025035974394"
+                      "version": "0.37.4.10188",
+                      "templateHash": "7629146954109041033"
                     }
                   },
                   "parameters": {
@@ -2046,7 +2101,7 @@
             {
               "condition": "[not(empty(variables('blobDnsZoneRG')))]",
               "type": "Microsoft.Resources/deployments",
-              "apiVersion": "2025-04-01",
+              "apiVersion": "2022-09-01",
               "name": "[format('dns-link-blob-{0}', parameters('namePrefix'))]",
               "subscriptionId": "[variables('resolvedDnsZonesSubscriptionId')]",
               "resourceGroup": "[variables('blobDnsZoneRG')]",
@@ -2072,8 +2127,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.40.2.10011",
-                      "templateHash": "3501376025035974394"
+                      "version": "0.37.4.10188",
+                      "templateHash": "7629146954109041033"
                     }
                   },
                   "parameters": {
@@ -2122,7 +2177,7 @@
             {
               "condition": "[not(empty(variables('cosmosDnsZoneRG')))]",
               "type": "Microsoft.Resources/deployments",
-              "apiVersion": "2025-04-01",
+              "apiVersion": "2022-09-01",
               "name": "[format('dns-link-cosmos-{0}', parameters('namePrefix'))]",
               "subscriptionId": "[variables('resolvedDnsZonesSubscriptionId')]",
               "resourceGroup": "[variables('cosmosDnsZoneRG')]",
@@ -2148,8 +2203,8 @@
                   "metadata": {
                     "_generator": {
                       "name": "bicep",
-                      "version": "0.40.2.10011",
-                      "templateHash": "3501376025035974394"
+                      "version": "0.37.4.10188",
+                      "templateHash": "7629146954109041033"
                     }
                   },
                   "parameters": {
@@ -2212,12 +2267,13 @@
       "dependsOn": [
         "[resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix')))]",
         "[resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix')))]",
+        "[resourceId('Microsoft.Resources/deployments', format('model-textembed-{0}', variables('shortSuffix')))]",
         "[resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix')))]"
       ]
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('bastion-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -2235,7 +2291,7 @@
             "value": "[format('{0}-bas-pip-{1}', parameters('namePrefix'), variables('shortSuffix'))]"
           },
           "bastionSubnetId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2025-04-01').outputs.bastionSubnetId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.bastionSubnetId.value]"
           }
         },
         "template": {
@@ -2244,8 +2300,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "12370533650936150862"
+              "version": "0.37.4.10188",
+              "templateHash": "11333492837896205908"
             }
           },
           "parameters": {
@@ -2332,7 +2388,7 @@
     {
       "condition": "[parameters('enableFirewall')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('firewall-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -2350,7 +2406,7 @@
             "value": "[format('{0}-afw-pip-{1}', parameters('namePrefix'), variables('shortSuffix'))]"
           },
           "firewallSubnetId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2025-04-01').outputs.firewallSubnetId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.firewallSubnetId.value]"
           },
           "enableEgressRules": {
             "value": true
@@ -2368,8 +2424,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "8336410814904447653"
+              "version": "0.37.4.10188",
+              "templateHash": "1326872964544400098"
             }
           },
           "parameters": {
@@ -2476,7 +2532,7 @@
     {
       "condition": "[and(parameters('enableFirewall'), variables('existingVnetPassedIn'))]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('routing-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -2491,7 +2547,7 @@
             "value": "[format('{0}-rt-management-{1}', parameters('namePrefix'), variables('shortSuffix'))]"
           },
           "vnetName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2025-04-01').outputs.vnetNameOut.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.vnetNameOut.value]"
           },
           "subnetName": {
             "value": "[parameters('managementSubnetName')]"
@@ -2499,7 +2555,7 @@
           "subnetPrefix": {
             "value": "[parameters('managementSubnetPrefix')]"
           },
-          "firewallPrivateIp": "[if(parameters('enableFirewall'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('firewall-{0}', variables('shortSuffix'))), '2025-04-01').outputs.firewallPrivateIp.value), createObject('value', ''))]"
+          "firewallPrivateIp": "[if(parameters('enableFirewall'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('firewall-{0}', variables('shortSuffix'))), '2022-09-01').outputs.firewallPrivateIp.value), createObject('value', ''))]"
         },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -2507,8 +2563,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "11841547711054255024"
+              "version": "0.37.4.10188",
+              "templateHash": "6788682476159911233"
             }
           },
           "parameters": {
@@ -2600,7 +2656,7 @@
     {
       "condition": "[and(parameters('enableFirewall'), variables('existingVnetPassedIn'))]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('routing-agent-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -2615,7 +2671,7 @@
             "value": "[format('{0}-rt-agent-{1}', parameters('namePrefix'), variables('shortSuffix'))]"
           },
           "vnetName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2025-04-01').outputs.vnetNameOut.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.vnetNameOut.value]"
           },
           "subnetName": {
             "value": "[parameters('agentSubnetName')]"
@@ -2623,7 +2679,7 @@
           "subnetPrefix": {
             "value": "[parameters('agentSubnetPrefix')]"
           },
-          "firewallPrivateIp": "[if(parameters('enableFirewall'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('firewall-{0}', variables('shortSuffix'))), '2025-04-01').outputs.firewallPrivateIp.value), createObject('value', ''))]"
+          "firewallPrivateIp": "[if(parameters('enableFirewall'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('firewall-{0}', variables('shortSuffix'))), '2022-09-01').outputs.firewallPrivateIp.value), createObject('value', ''))]"
         },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -2631,8 +2687,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "11841547711054255024"
+              "version": "0.37.4.10188",
+              "templateHash": "6788682476159911233"
             }
           },
           "parameters": {
@@ -2724,7 +2780,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('jumpbox-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -2742,7 +2798,7 @@
             "value": "[format('{0}-jump-nic-{1}', parameters('namePrefix'), variables('shortSuffix'))]"
           },
           "subnetId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2025-04-01').outputs.managementSubnetId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.managementSubnetId.value]"
           },
           "adminUsername": {
             "value": "[parameters('jumpboxAdminUsername')]"
@@ -2757,8 +2813,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "2347627965985022375"
+              "version": "0.37.4.10188",
+              "templateHash": "8619852749649930827"
             }
           },
           "parameters": {
@@ -2846,7 +2902,7 @@
                   "osDisk": {
                     "createOption": "FromImage",
                     "managedDisk": {
-                      "storageAccountType": "StandardSSD_LRS"
+                      "storageAccountType": "Standard_LRS"
                     }
                   }
                 },
@@ -2882,7 +2938,7 @@
     {
       "condition": "[parameters('deployModel')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('model-gpt41-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -2891,7 +2947,7 @@
         "mode": "Incremental",
         "parameters": {
           "accountName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2025-04-01').outputs.accountNameOut.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2022-09-01').outputs.accountNameOut.value]"
           },
           "deploymentName": {
             "value": "[variables('gpt41Deployment').name]"
@@ -2918,8 +2974,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "3318042171291725027"
+              "version": "0.37.4.10188",
+              "templateHash": "458173948928113910"
             }
           },
           "parameters": {
@@ -3006,7 +3062,7 @@
     {
       "condition": "[parameters('deployModel')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('model-gpt5-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -3015,7 +3071,7 @@
         "mode": "Incremental",
         "parameters": {
           "accountName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2025-04-01').outputs.accountNameOut.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2022-09-01').outputs.accountNameOut.value]"
           },
           "deploymentName": {
             "value": "[variables('gpt5Deployment').name]"
@@ -3042,8 +3098,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "3318042171291725027"
+              "version": "0.37.4.10188",
+              "templateHash": "458173948928113910"
             }
           },
           "parameters": {
@@ -3131,7 +3187,7 @@
     {
       "condition": "[parameters('deployModel')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('model-textembed-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -3140,7 +3196,7 @@
         "mode": "Incremental",
         "parameters": {
           "accountName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2025-04-01').outputs.accountNameOut.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2022-09-01').outputs.accountNameOut.value]"
           },
           "deploymentName": {
             "value": "[variables('textEmbeddingDeployment').name]"
@@ -3167,8 +3223,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "3318042171291725027"
+              "version": "0.37.4.10188",
+              "templateHash": "458173948928113910"
             }
           },
           "parameters": {
@@ -3255,7 +3311,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('workspace-id-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -3264,7 +3320,7 @@
         "mode": "Incremental",
         "parameters": {
           "projectWorkspaceId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2025-04-01').outputs.projectWorkspaceId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2022-09-01').outputs.projectWorkspaceId.value]"
           }
         },
         "template": {
@@ -3273,8 +3329,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "15348001689166719167"
+              "version": "0.37.4.10188",
+              "templateHash": "4425153102695278774"
             }
           },
           "parameters": {
@@ -3304,7 +3360,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('storage-ra-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -3313,10 +3369,10 @@
         "mode": "Incremental",
         "parameters": {
           "azureStorageName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2025-04-01').outputs.storageName.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2022-09-01').outputs.storageName.value]"
           },
           "projectPrincipalId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2025-04-01').outputs.projectPrincipalId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2022-09-01').outputs.projectPrincipalId.value]"
           }
         },
         "template": {
@@ -3325,8 +3381,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "6884324119830792423"
+              "version": "0.37.4.10188",
+              "templateHash": "11576034225482281955"
             }
           },
           "parameters": {
@@ -3347,7 +3403,7 @@
             {
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
-              "scope": "[resourceId('Microsoft.Storage/storageAccounts', parameters('azureStorageName'))]",
+              "scope": "[format('Microsoft.Storage/storageAccounts/{0}', parameters('azureStorageName'))]",
               "name": "[guid(parameters('projectPrincipalId'), resourceId('Microsoft.Storage/storageAccounts', parameters('azureStorageName')), 'storage-blob-data-contributor')]",
               "properties": {
                 "principalId": "[parameters('projectPrincipalId')]",
@@ -3366,7 +3422,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('cosmos-account-ra-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -3375,10 +3431,10 @@
         "mode": "Incremental",
         "parameters": {
           "cosmosDBName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2025-04-01').outputs.cosmosName.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2022-09-01').outputs.cosmosName.value]"
           },
           "projectPrincipalId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2025-04-01').outputs.projectPrincipalId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2022-09-01').outputs.projectPrincipalId.value]"
           }
         },
         "template": {
@@ -3387,8 +3443,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "16789942669670731520"
+              "version": "0.37.4.10188",
+              "templateHash": "15320448447088983568"
             }
           },
           "parameters": {
@@ -3409,12 +3465,12 @@
             {
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
-              "scope": "[resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDBName'))]",
-              "name": "[guid(parameters('projectPrincipalId'), resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDBName')), 'cosmosdb-account-reader')]",
+              "scope": "[format('Microsoft.DocumentDB/databaseAccounts/{0}', parameters('cosmosDBName'))]",
+              "name": "[guid(parameters('projectPrincipalId'), resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosDBName')), 'cosmosdb-operator')]",
               "properties": {
                 "principalId": "[parameters('projectPrincipalId')]",
                 "principalType": "ServicePrincipal",
-                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'fbdf93bf-df7d-467e-a4d2-9458aa1360c8')]"
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '230815da-be43-4aae-9cb4-875f7bd000aa')]"
               }
             }
           ]
@@ -3428,7 +3484,7 @@
     },
     {
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('search-ra-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -3437,10 +3493,10 @@
         "mode": "Incremental",
         "parameters": {
           "aiSearchName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2025-04-01').outputs.searchName.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2022-09-01').outputs.searchName.value]"
           },
           "projectPrincipalId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2025-04-01').outputs.projectPrincipalId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2022-09-01').outputs.projectPrincipalId.value]"
           }
         },
         "template": {
@@ -3449,8 +3505,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "9243106300669369464"
+              "version": "0.37.4.10188",
+              "templateHash": "13484136610260349786"
             }
           },
           "parameters": {
@@ -3471,7 +3527,7 @@
             {
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
-              "scope": "[resourceId('Microsoft.Search/searchServices', parameters('aiSearchName'))]",
+              "scope": "[format('Microsoft.Search/searchServices/{0}', parameters('aiSearchName'))]",
               "name": "[guid(parameters('projectPrincipalId'), resourceId('Microsoft.Search/searchServices', parameters('aiSearchName')), 'search-index-data-contributor')]",
               "properties": {
                 "principalId": "[parameters('projectPrincipalId')]",
@@ -3482,7 +3538,7 @@
             {
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
-              "scope": "[resourceId('Microsoft.Search/searchServices', parameters('aiSearchName'))]",
+              "scope": "[format('Microsoft.Search/searchServices/{0}', parameters('aiSearchName'))]",
               "name": "[guid(parameters('projectPrincipalId'), resourceId('Microsoft.Search/searchServices', parameters('aiSearchName')), 'search-service-contributor')]",
               "properties": {
                 "principalId": "[parameters('projectPrincipalId')]",
@@ -3502,7 +3558,7 @@
     {
       "condition": "[parameters('deployCapabilityHost')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('capability-host-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -3510,26 +3566,32 @@
         },
         "mode": "Incremental",
         "parameters": {
-          "location": {
-            "value": "[parameters('location')]"
-          },
           "accountName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2025-04-01').outputs.accountNameOut.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2022-09-01').outputs.accountNameOut.value]"
           },
           "projectName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2025-04-01').outputs.projectNameOut.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2022-09-01').outputs.projectNameOut.value]"
           },
           "projectCapHost": {
             "value": "[parameters('projectCapHost')]"
           },
           "cosmosDBConnection": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2025-04-01').outputs.cosmosName.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2022-09-01').outputs.cosmosName.value]"
           },
           "azureStorageConnection": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2025-04-01').outputs.storageName.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2022-09-01').outputs.storageName.value]"
           },
           "aiSearchConnection": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2025-04-01').outputs.searchName.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2022-09-01').outputs.searchName.value]"
+          },
+          "cosmosDBResourceId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2022-09-01').outputs.cosmosId.value]"
+          },
+          "azureStorageResourceId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2022-09-01').outputs.storageId.value]"
+          },
+          "aiSearchResourceId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2022-09-01').outputs.searchId.value]"
           }
         },
         "template": {
@@ -3538,8 +3600,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "3666346460907449263"
+              "version": "0.37.4.10188",
+              "templateHash": "9050332379128120223"
             }
           },
           "parameters": {
@@ -3547,12 +3609,6 @@
               "type": "string",
               "metadata": {
                 "description": "AI Foundry account name"
-              }
-            },
-            "location": {
-              "type": "string",
-              "metadata": {
-                "description": "Azure region"
               }
             },
             "projectName": {
@@ -3566,6 +3622,13 @@
               "defaultValue": "caphostproj",
               "metadata": {
                 "description": "Project capability host name"
+              }
+            },
+            "accountCapHost": {
+              "type": "string",
+              "defaultValue": "caphostacct",
+              "metadata": {
+                "description": "Account capability host name"
               }
             },
             "cosmosDBConnection": {
@@ -3585,14 +3648,92 @@
               "metadata": {
                 "description": "Search connection name"
               }
+            },
+            "cosmosDBResourceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Cosmos DB resource id (from dependencies)"
+              }
+            },
+            "azureStorageResourceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Storage account resource id (from dependencies)"
+              }
+            },
+            "aiSearchResourceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "AI Search resource id (from dependencies)"
+              }
             }
           },
+          "variables": {
+            "hasCosmosId": "[not(equals(parameters('cosmosDBResourceId'), ''))]",
+            "hasStorageId": "[not(equals(parameters('azureStorageResourceId'), ''))]",
+            "hasSearchId": "[not(equals(parameters('aiSearchResourceId'), ''))]"
+          },
           "resources": [
+            {
+              "condition": "[variables('hasCosmosId')]",
+              "type": "Microsoft.CognitiveServices/accounts/projects/connections",
+              "apiVersion": "2025-04-01-preview",
+              "name": "[format('{0}/{1}/{2}', parameters('accountName'), parameters('projectName'), parameters('cosmosDBConnection'))]",
+              "properties": {
+                "category": "CosmosDB",
+                "target": "[format('https://{0}.documents.azure.com', parameters('cosmosDBConnection'))]",
+                "authType": "AAD",
+                "metadata": {
+                  "ApiType": "Azure",
+                  "ResourceId": "[parameters('cosmosDBResourceId')]"
+                }
+              }
+            },
+            {
+              "condition": "[variables('hasStorageId')]",
+              "type": "Microsoft.CognitiveServices/accounts/projects/connections",
+              "apiVersion": "2025-04-01-preview",
+              "name": "[format('{0}/{1}/{2}', parameters('accountName'), parameters('projectName'), parameters('azureStorageConnection'))]",
+              "properties": {
+                "category": "AzureStorageAccount",
+                "target": "[format('https://{0}.blob.{1}', parameters('azureStorageConnection'), environment().suffixes.storage)]",
+                "authType": "AAD",
+                "metadata": {
+                  "ApiType": "Azure",
+                  "ResourceId": "[parameters('azureStorageResourceId')]"
+                }
+              }
+            },
+            {
+              "condition": "[variables('hasSearchId')]",
+              "type": "Microsoft.CognitiveServices/accounts/projects/connections",
+              "apiVersion": "2025-04-01-preview",
+              "name": "[format('{0}/{1}/{2}', parameters('accountName'), parameters('projectName'), parameters('aiSearchConnection'))]",
+              "properties": {
+                "category": "CognitiveSearch",
+                "target": "[format('https://{0}.search.windows.net', parameters('aiSearchConnection'))]",
+                "authType": "AAD",
+                "metadata": {
+                  "ApiType": "Azure",
+                  "ResourceId": "[parameters('aiSearchResourceId')]"
+                }
+              }
+            },
+            {
+              "type": "Microsoft.CognitiveServices/accounts/capabilityHosts",
+              "apiVersion": "2025-04-01-preview",
+              "name": "[format('{0}/{1}', parameters('accountName'), parameters('accountCapHost'))]",
+              "properties": {
+                "capabilityHostKind": "Agents"
+              }
+            },
             {
               "type": "Microsoft.CognitiveServices/accounts/projects/capabilityHosts",
               "apiVersion": "2025-04-01-preview",
               "name": "[format('{0}/{1}/{2}', parameters('accountName'), parameters('projectName'), parameters('projectCapHost'))]",
-              "location": "[parameters('location')]",
               "properties": {
                 "capabilityHostKind": "Agents",
                 "vectorStoreConnections": [
@@ -3604,7 +3745,10 @@
                 "threadStorageConnections": [
                   "[parameters('cosmosDBConnection')]"
                 ]
-              }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.CognitiveServices/accounts/capabilityHosts', parameters('accountName'), parameters('accountCapHost'))]"
+              ]
             }
           ],
           "outputs": {
@@ -3626,7 +3770,7 @@
     {
       "condition": "[parameters('deployCapabilityHost')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('storage-containers-ra-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -3635,10 +3779,10 @@
         "mode": "Incremental",
         "parameters": {
           "storageName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2025-04-01').outputs.storageName.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2022-09-01').outputs.storageName.value]"
           },
           "aiProjectPrincipalId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2025-04-01').outputs.projectPrincipalId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2022-09-01').outputs.projectPrincipalId.value]"
           }
         },
         "template": {
@@ -3647,8 +3791,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "15396977330113025121"
+              "version": "0.37.4.10188",
+              "templateHash": "4045376435360642941"
             }
           },
           "parameters": {
@@ -3669,7 +3813,7 @@
             {
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
-              "scope": "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageName'))]",
+              "scope": "[format('Microsoft.Storage/storageAccounts/{0}', parameters('storageName'))]",
               "name": "[guid(parameters('aiProjectPrincipalId'), resourceId('Microsoft.Storage/storageAccounts', parameters('storageName')), 'storage-blob-data-owner')]",
               "properties": {
                 "principalId": "[parameters('aiProjectPrincipalId')]",
@@ -3689,7 +3833,7 @@
     {
       "condition": "[parameters('deployCapabilityHost')]",
       "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2025-04-01",
+      "apiVersion": "2022-09-01",
       "name": "[format('cosmos-containers-ra-{0}', variables('shortSuffix'))]",
       "properties": {
         "expressionEvaluationOptions": {
@@ -3698,13 +3842,13 @@
         "mode": "Incremental",
         "parameters": {
           "cosmosAccountName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2025-04-01').outputs.cosmosName.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2022-09-01').outputs.cosmosName.value]"
           },
           "projectWorkspaceId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('workspace-id-{0}', variables('shortSuffix'))), '2025-04-01').outputs.projectWorkspaceIdGuid.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('workspace-id-{0}', variables('shortSuffix'))), '2022-09-01').outputs.projectWorkspaceIdGuid.value]"
           },
           "projectPrincipalId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2025-04-01').outputs.projectPrincipalId.value]"
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2022-09-01').outputs.projectPrincipalId.value]"
           }
         },
         "template": {
@@ -3713,8 +3857,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.40.2.10011",
-              "templateHash": "9252429973292161486"
+              "version": "0.37.4.10188",
+              "templateHash": "3040318681308942830"
             }
           },
           "parameters": {
@@ -3767,31 +3911,31 @@
   "outputs": {
     "foundryAccountId": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2025-04-01').outputs.accountId.value]"
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2022-09-01').outputs.accountId.value]"
     },
     "foundryProjectId": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2025-04-01').outputs.projectId.value]"
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2022-09-01').outputs.projectId.value]"
     },
     "foundryProjectPrincipalId": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2025-04-01').outputs.projectPrincipalId.value]"
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2022-09-01').outputs.projectPrincipalId.value]"
     },
     "bastionId": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('bastion-{0}', variables('shortSuffix'))), '2025-04-01').outputs.bastionHostId.value]"
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('bastion-{0}', variables('shortSuffix'))), '2022-09-01').outputs.bastionHostId.value]"
     },
     "jumpboxPrivateIp": {
       "type": "string",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('jumpbox-{0}', variables('shortSuffix'))), '2025-04-01').outputs.privateIp.value]"
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('jumpbox-{0}', variables('shortSuffix'))), '2022-09-01').outputs.privateIp.value]"
     },
     "privateEndpointIds": {
       "type": "array",
-      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('private-connectivity-{0}', variables('shortSuffix'))), '2025-04-01').outputs.privateEndpointIds.value]"
+      "value": "[reference(resourceId('Microsoft.Resources/deployments', format('private-connectivity-{0}', variables('shortSuffix'))), '2022-09-01').outputs.privateEndpointIds.value]"
     },
     "capabilityHostName": {
       "type": "string",
-      "value": "[if(parameters('deployCapabilityHost'), reference(resourceId('Microsoft.Resources/deployments', format('capability-host-{0}', variables('shortSuffix'))), '2025-04-01').outputs.projectCapHost.value, '')]"
+      "value": "[if(parameters('deployCapabilityHost'), reference(resourceId('Microsoft.Resources/deployments', format('capability-host-{0}', variables('shortSuffix'))), '2022-09-01').outputs.projectCapHost.value, '')]"
     }
   }
 }

@@ -210,6 +210,9 @@ module privateConnectivity 'modules/network/private-endpoints-dns.bicep' = {
     existingDnsZones: existingDnsZones
     dnsZonesSubscriptionId: dnsZonesSubscriptionId
   }
+  dependsOn: [
+    modelTextEmbedding
+  ]
 }
 
 module bastion 'modules/network/bastion.bicep' = {
@@ -364,13 +367,15 @@ module aiSearchRoleAssignments 'modules/identity/ai-search-role-assignments.bice
 module addProjectCapabilityHost 'modules/foundry/add-project-capability-host.bicep' = if (deployCapabilityHost) {
   name: 'capability-host-${shortSuffix}'
   params: {
-    location: location
     accountName: foundry.outputs.accountNameOut
     projectName: foundry.outputs.projectNameOut
     projectCapHost: projectCapHost
     cosmosDBConnection: dependencies.outputs.cosmosName
     azureStorageConnection: dependencies.outputs.storageName
     aiSearchConnection: dependencies.outputs.searchName
+    cosmosDBResourceId: dependencies.outputs.cosmosId
+    azureStorageResourceId: dependencies.outputs.storageId
+    aiSearchResourceId: dependencies.outputs.searchId
   }
   dependsOn: [
     storageAccountRoleAssignment

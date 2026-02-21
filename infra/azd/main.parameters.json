@@ -106,7 +106,7 @@
       "value": true
     },
     "deployCapabilityHost": {
-      "value": false
+      "value": true
     }
   }
 }

@@ -8,12 +8,12 @@ resource cosmosAccount 'Microsoft.DocumentDB/databaseAccounts@2024-11-15' existi
   name: cosmosDBName
 }
 
-resource cosmosAccountReaderAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(projectPrincipalId, cosmosAccount.id, 'cosmosdb-account-reader')
+resource cosmosAccountOperatorAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(projectPrincipalId, cosmosAccount.id, 'cosmosdb-operator')
   scope: cosmosAccount
   properties: {
     principalId: projectPrincipalId
     principalType: 'ServicePrincipal'
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'fbdf93bf-df7d-467e-a4d2-9458aa1360c8')
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '230815da-be43-4aae-9cb4-875f7bd000aa')
   }
 }
