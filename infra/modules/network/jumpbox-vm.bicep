@@ -39,6 +39,9 @@ resource nic 'Microsoft.Network/networkInterfaces@2024-05-01' = {
 resource vm 'Microsoft.Compute/virtualMachines@2024-07-01' = {
   name: vmName
   location: location
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
     hardwareProfile: {
       vmSize: 'Standard_B2s'
@@ -77,6 +80,7 @@ resource vm 'Microsoft.Compute/virtualMachines@2024-07-01' = {
 
 output vmId string = vm.id
 output privateIp string = nic.properties.ipConfigurations[0].properties.privateIPAddress
+output principalId string = vm.identity.principalId!
 
 // VM extension removed: to avoid template escaping/immutability issues.
 // Apply bootstrap manually via `az vm run-command invoke` or add a properly-escaped extension later.

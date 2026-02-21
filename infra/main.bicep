@@ -364,6 +364,46 @@ module aiSearchRoleAssignments 'modules/identity/ai-search-role-assignments.bice
   ]
 }
 
+module jumpboxFoundryRoleAssignment 'modules/identity/foundry-account-role-assignment.bicep' = {
+  name: 'jumpbox-foundry-ra-${shortSuffix}'
+  params: {
+    accountName: foundry.outputs.accountNameOut
+    principalId: jumpbox.outputs.principalId
+  }
+}
+
+module jumpboxStorageRoleAssignment 'modules/identity/azure-storage-account-role-assignment.bicep' = {
+  name: 'jumpbox-storage-ra-${shortSuffix}'
+  params: {
+    azureStorageName: dependencies.outputs.storageName
+    projectPrincipalId: jumpbox.outputs.principalId
+  }
+}
+
+module jumpboxAiSearchRoleAssignment 'modules/identity/ai-search-role-assignments.bicep' = {
+  name: 'jumpbox-search-ra-${shortSuffix}'
+  params: {
+    aiSearchName: dependencies.outputs.searchName
+    projectPrincipalId: jumpbox.outputs.principalId
+  }
+}
+
+module jumpboxCosmosAccountRoleAssignment 'modules/identity/cosmosdb-account-role-assignment.bicep' = {
+  name: 'jumpbox-cosmos-account-ra-${shortSuffix}'
+  params: {
+    cosmosDBName: dependencies.outputs.cosmosName
+    projectPrincipalId: jumpbox.outputs.principalId
+  }
+}
+
+module jumpboxCosmosSqlRoleAssignment 'modules/identity/cosmosdb-sql-account-role-assignment.bicep' = {
+  name: 'jumpbox-cosmos-sql-ra-${shortSuffix}'
+  params: {
+    cosmosAccountName: dependencies.outputs.cosmosName
+    principalId: jumpbox.outputs.principalId
+  }
+}
+
 module addProjectCapabilityHost 'modules/foundry/add-project-capability-host.bicep' = if (deployCapabilityHost) {
   name: 'capability-host-${shortSuffix}'
   params: {
