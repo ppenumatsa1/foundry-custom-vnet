@@ -13,23 +13,8 @@ param projectDisplayName string
 @description('Project description')
 param projectDescription string
 
-@description('Optional comma-separated public IPv4/CIDR allow-list for Foundry portal/API access. Empty keeps Foundry fully private.')
-param foundryPortalAllowedIpRangesCsv string = ''
-
-@description('Network ACL bypass mode for Foundry account. Use AzureServices when portal blades (for example Agents) require trusted Azure service access.')
-@allowed([
-  'None'
-  'AzureServices'
-])
-param foundryNetworkAclsBypass string = 'None'
-
-var foundryPortalAllowedIpRules = empty(foundryPortalAllowedIpRangesCsv)
-  ? []
-  : split(foundryPortalAllowedIpRangesCsv, ',')
-
-var foundryPortalAllowedIpAclRules = [for ip in foundryPortalAllowedIpRules: {
-      value: trim(ip)
-    }]
+@description('Agent subnet ARM resource ID used for Foundry Agent network injection')
+param agentSubnetId string
 
 resource aiFoundryAccount 'Microsoft.CognitiveServices/accounts@2025-06-01' = {
   name: accountName
@@ -43,12 +28,20 @@ resource aiFoundryAccount 'Microsoft.CognitiveServices/accounts@2025-06-01' = {
   }
   properties: {
     customSubDomainName: accountName
-    publicNetworkAccess: length(foundryPortalAllowedIpAclRules) > 0 ? 'Enabled' : 'Disabled'
+    publicNetworkAccess: 'Enabled'
     networkAcls: {
-      defaultAction: 'Deny'
-      bypass: foundryNetworkAclsBypass
-      ipRules: foundryPortalAllowedIpAclRules
+      defaultAction: 'Allow'
+      bypass: 'AzureServices'
+      ipRules: []
     }
+    #disable-next-line BCP036
+    networkInjections: [
+      {
+        scenario: 'agent'
+        subnetArmId: agentSubnetId
+        useMicrosoftManagedNetwork: false
+      }
+    ]
     #disable-next-line BCP187
     allowProjectManagement: true
   }

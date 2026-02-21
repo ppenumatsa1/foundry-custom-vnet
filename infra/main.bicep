@@ -39,12 +39,6 @@ param foundryProjectDisplayName string = 'Default Project'
 @description('Foundry project description')
 param foundryProjectDescription string = 'Private network AI Foundry project'
 
-@description('Optional comma-separated public IPv4/CIDR allow-list for Foundry portal/API access. Empty keeps Foundry fully private.')
-param foundryPortalAllowedIpRangesCsv string = ''
-
-@description('Network ACL bypass mode for Foundry account (None or AzureServices).')
-param foundryNetworkAclsBypass string = 'None'
-
 @description('Project capability host name')
 param projectCapHost string = 'caphostproj'
 
@@ -112,6 +106,7 @@ var vnetParts = split(existingVnetResourceId, '/')
 var existingVnetSubscriptionId = existingVnetPassedIn ? vnetParts[2] : subscription().subscriptionId
 var existingVnetResourceGroupName = existingVnetPassedIn ? vnetParts[4] : resourceGroup().name
 var resolvedVnetName = existingVnetPassedIn ? last(vnetParts) : vnetName
+var resolvedAgentSubnetId = existingVnetPassedIn ? '${existingVnetResourceId}/subnets/${agentSubnetName}' : network.outputs.agentSubnetId
 #disable-next-line BCP318
 var firewallNextHopIp = enableFirewall ? firewall.outputs.firewallPrivateIp! : ''
 var gpt41Deployment = {
@@ -191,8 +186,7 @@ module foundry 'modules/foundry/account-project.bicep' = {
     projectName: foundryProjectName
     projectDisplayName: foundryProjectDisplayName
     projectDescription: foundryProjectDescription
-    foundryPortalAllowedIpRangesCsv: foundryPortalAllowedIpRangesCsv
-    foundryNetworkAclsBypass: foundryNetworkAclsBypass
+    agentSubnetId: resolvedAgentSubnetId
   }
 }
 
@@ -260,6 +254,14 @@ module agentRouting 'modules/network/routing.bicep' = if (enableFirewall && exis
     vnetName: network.outputs.vnetNameOut
     subnetName: agentSubnetName
     subnetPrefix: agentSubnetPrefix
+    subnetDelegations: [
+      {
+        name: 'delegation-agent'
+        properties: {
+          serviceName: 'Microsoft.App/environments'
+        }
+      }
+    ]
     firewallPrivateIp: firewallNextHopIp
   }
   dependsOn: [
@@ -410,6 +412,7 @@ module addProjectCapabilityHost 'modules/foundry/add-project-capability-host.bic
     accountName: foundry.outputs.accountNameOut
     projectName: foundry.outputs.projectNameOut
     projectCapHost: projectCapHost
+    customerSubnetId: resolvedAgentSubnetId
     cosmosDBConnection: dependencies.outputs.cosmosName
     azureStorageConnection: dependencies.outputs.storageName
     aiSearchConnection: dependencies.outputs.searchName

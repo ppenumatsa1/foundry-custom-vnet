@@ -4,7 +4,12 @@ import hashlib
 import json
 
 from azure.ai.projects import AIProjectClient
-from azure.ai.projects.models import ApproximateLocation, PromptAgentDefinition, WebSearchPreviewTool
+from azure.ai.projects.models import (
+    ApproximateLocation,
+    PromptAgentDefinition,
+    WebSearchPreviewTool,
+)
+from azure.core.exceptions import HttpResponseError
 
 from foundry_bing_agent.config import Settings
 from foundry_bing_agent.runtime.cache import load_agent_cache, save_agent_cache
@@ -12,16 +17,18 @@ from foundry_bing_agent.runtime.cache import load_agent_cache, save_agent_cache
 
 def _agent_fingerprint(settings: Settings, instructions: str) -> str:
     payload = {
-        'agent_name': settings.foundry_agent_id,
-        'instructions_hash': hashlib.sha256(instructions.encode('utf-8')).hexdigest(),
-        'model': settings.azure_openai_model,
-        'web_search_context_size': settings.web_search_context_size,
-        'web_search_country': settings.web_search_country,
-        'web_search_region': settings.web_search_region,
-        'web_search_city': settings.web_search_city,
-        'web_search_timezone': settings.web_search_timezone,
+        "agent_name": settings.foundry_agent_id,
+        "instructions_hash": hashlib.sha256(instructions.encode("utf-8")).hexdigest(),
+        "model": settings.azure_openai_model,
+        "web_search_context_size": settings.web_search_context_size,
+        "web_search_country": settings.web_search_country,
+        "web_search_region": settings.web_search_region,
+        "web_search_city": settings.web_search_city,
+        "web_search_timezone": settings.web_search_timezone,
     }
-    return hashlib.sha256(json.dumps(payload, sort_keys=True).encode('utf-8')).hexdigest()
+    return hashlib.sha256(
+        json.dumps(payload, sort_keys=True).encode("utf-8")
+    ).hexdigest()
 
 
 def _build_web_search_tool(settings: Settings) -> WebSearchPreviewTool:
@@ -29,9 +36,11 @@ def _build_web_search_tool(settings: Settings) -> WebSearchPreviewTool:
 
     if settings.web_search_context_size:
         context_size = settings.web_search_context_size.strip().lower()
-        if context_size not in {'low', 'medium', 'high'}:
-            raise ValueError('WEB_SEARCH_CONTEXT_SIZE must be one of: low, medium, high')
-        kwargs['search_context_size'] = context_size
+        if context_size not in {"low", "medium", "high"}:
+            raise ValueError(
+                "WEB_SEARCH_CONTEXT_SIZE must be one of: low, medium, high"
+            )
+        kwargs["search_context_size"] = context_size
 
     has_any_location = any(
         [
@@ -42,7 +51,7 @@ def _build_web_search_tool(settings: Settings) -> WebSearchPreviewTool:
         ]
     )
     if has_any_location:
-        kwargs['user_location'] = ApproximateLocation(
+        kwargs["user_location"] = ApproximateLocation(
             country=settings.web_search_country,
             region=settings.web_search_region,
             city=settings.web_search_city,
@@ -52,7 +61,36 @@ def _build_web_search_tool(settings: Settings) -> WebSearchPreviewTool:
     return WebSearchPreviewTool(**kwargs)
 
 
-def get_or_create_agent(project_client: AIProjectClient, settings: Settings, instructions: str) -> str:
+def _cached_agent_version_exists(
+    project_client: AIProjectClient,
+    agent_name: str,
+    agent_version: str,
+) -> bool:
+    try:
+        if hasattr(project_client.agents, "get_version"):
+            project_client.agents.get_version(
+                agent_name=agent_name,
+                agent_version=agent_version,
+            )
+            return True
+
+        if hasattr(project_client.agents, "get"):
+            project_client.agents.get(
+                agent_name=agent_name,
+                agent_version=agent_version,
+            )
+            return True
+
+        return False
+    except HttpResponseError as exc:
+        if getattr(exc, "status_code", None) == 404:
+            return False
+        raise
+
+
+def get_or_create_agent(
+    project_client: AIProjectClient, settings: Settings, instructions: str
+) -> str:
     agent_name = settings.foundry_agent_id
 
     if not settings.create_agent_if_missing:
@@ -64,12 +102,15 @@ def get_or_create_agent(project_client: AIProjectClient, settings: Settings, ins
 
     cached_agent_name = None
     cached_agent_version = None
-    if cache and cache.get('tool_hash') == tool_hash:
-        cached_agent_name = cache.get('agent_name')
-        cached_agent_version = cache.get('agent_version')
+    if cache and cache.get("tool_hash") == tool_hash:
+        cached_agent_name = cache.get("agent_name")
+        cached_agent_version = cache.get("agent_version")
 
     if cached_agent_name and cached_agent_version:
-        return cached_agent_name
+        if _cached_agent_version_exists(
+            project_client, cached_agent_name, cached_agent_version
+        ):
+            return cached_agent_name
 
     agent = project_client.agents.create_version(
         agent_name=agent_name,

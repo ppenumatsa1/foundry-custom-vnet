@@ -66,12 +66,6 @@
     "foundryProjectDescription": {
       "value": "Private AI Foundry project in custom VNet"
     },
-    "foundryPortalAllowedIpRangesCsv": {
-      "value": "${FOUNDRY_PORTAL_ALLOWED_IP_RANGES}"
-    },
-    "foundryNetworkAclsBypass": {
-      "value": "${FOUNDRY_NETWORK_ACLS_BYPASS}"
-    },
     "projectCapHost": {
       "value": "caphostproj"
     },

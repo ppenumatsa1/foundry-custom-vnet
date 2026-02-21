@@ -70,6 +70,7 @@ module existingVnet 'existing-vnet.bicep' = if (useExistingVnet) {
     vnetSubscriptionId: existingVnetSubscriptionId
     vnetResourceGroupName: existingVnetResourceGroupName
     agentSubnetName: agentSubnetName
+    agentSubnetPrefix: agentSubnetPrefix
     peSubnetName: peSubnetName
     managementSubnetName: managementSubnetName
     bastionSubnetName: bastionSubnetName

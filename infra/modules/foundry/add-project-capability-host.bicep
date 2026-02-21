@@ -10,6 +10,9 @@ param projectCapHost string = 'caphostproj'
 @description('Account capability host name')
 param accountCapHost string = 'caphostacct'
 
+@description('Customer agent subnet ARM resource ID for account capability host network placement')
+param customerSubnetId string
+
 @description('Cosmos connection name')
 param cosmosDBConnection string
 
@@ -94,6 +97,7 @@ resource accountCapabilityHost 'Microsoft.CognitiveServices/accounts/capabilityH
   parent: account
   properties: {
     capabilityHostKind: 'Agents'
+    customerSubnet: customerSubnetId
   }
 }
 

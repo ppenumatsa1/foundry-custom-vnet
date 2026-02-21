@@ -4,3 +4,8 @@ metadata:
 infra:
   provider: bicep
   path: infra/azd
+
+hooks:
+  preprovision:
+    shell: sh
+    run: ./infra/scripts/preprovision-capability-hosts.sh

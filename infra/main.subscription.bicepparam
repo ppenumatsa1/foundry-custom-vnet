@@ -32,8 +32,6 @@ param foundryAccountName = 'aifndcustomvnetacct'
 param foundryProjectName = 'private-project'
 param foundryProjectDisplayName = 'Private Project'
 param foundryProjectDescription = 'Private AI Foundry project in custom VNet'
-param foundryPortalAllowedIpRangesCsv = ''
-param foundryNetworkAclsBypass = 'None'
 param projectCapHost = 'caphostproj'
 
 param vnetAddressPrefix = '10.60.0.0/16'

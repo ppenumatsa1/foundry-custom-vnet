@@ -42,12 +42,6 @@ param foundryProjectDisplayName string = 'Private Project'
 @description('Foundry project description')
 param foundryProjectDescription string = 'Private AI Foundry project in custom VNet'
 
-@description('Optional comma-separated public IPv4/CIDR allow-list for Foundry portal/API access. Empty keeps Foundry fully private.')
-param foundryPortalAllowedIpRangesCsv string = ''
-
-@description('Network ACL bypass mode for Foundry account (None or AzureServices).')
-param foundryNetworkAclsBypass string = 'None'
-
 @description('Project capability host name')
 param projectCapHost string = 'caphostproj'
 
@@ -117,8 +111,6 @@ module provision '../main.subscription.bicep' = {
     foundryProjectName: foundryProjectName
     foundryProjectDisplayName: foundryProjectDisplayName
     foundryProjectDescription: foundryProjectDescription
-    foundryPortalAllowedIpRangesCsv: foundryPortalAllowedIpRangesCsv
-    foundryNetworkAclsBypass: foundryNetworkAclsBypass
     projectCapHost: projectCapHost
     aiSearchResourceId: aiSearchResourceId
     azureStorageAccountResourceId: azureStorageAccountResourceId
