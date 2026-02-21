@@ -12,9 +12,6 @@ param namePrefix string = 'aifndcustomvnet'
 @description('Virtual network name')
 param vnetName string = '${namePrefix}-vnet'
 
-@description('Existing VNet resource ID (optional)')
-param existingVnetResourceId string = ''
-
 @description('Agent subnet name')
 param agentSubnetName string = 'snet-agent'
 
@@ -23,12 +20,6 @@ param peSubnetName string = 'snet-private-endpoints'
 
 @description('Management subnet name')
 param managementSubnetName string = 'snet-management'
-
-@description('Bastion subnet name')
-param bastionSubnetName string = 'AzureBastionSubnet'
-
-@description('Firewall subnet name')
-param firewallSubnetName string = 'AzureFirewallSubnet'
 
 @description('Foundry account name')
 param foundryAccountName string = 'aifndcustomvnetacct'
@@ -101,12 +92,9 @@ module provision '../main.subscription.bicep' = {
     location: location
     namePrefix: namePrefix
     vnetName: vnetName
-    existingVnetResourceId: existingVnetResourceId
     agentSubnetName: agentSubnetName
     peSubnetName: peSubnetName
     managementSubnetName: managementSubnetName
-    bastionSubnetName: bastionSubnetName
-    firewallSubnetName: firewallSubnetName
     foundryAccountName: foundryAccountName
     foundryProjectName: foundryProjectName
     foundryProjectDisplayName: foundryProjectDisplayName

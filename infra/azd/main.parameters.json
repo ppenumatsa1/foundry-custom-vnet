@@ -14,9 +14,6 @@
     "vnetName": {
       "value": "aifndcustomvnet-vnet"
     },
-    "existingVnetResourceId": {
-      "value": "${EXISTING_VNET_RESOURCE_ID}"
-    },
     "agentSubnetName": {
       "value": "snet-agent"
     },
@@ -25,12 +22,6 @@
     },
     "managementSubnetName": {
       "value": "snet-management"
-    },
-    "bastionSubnetName": {
-      "value": "AzureBastionSubnet"
-    },
-    "firewallSubnetName": {
-      "value": "AzureFirewallSubnet"
     },
     "aiSearchResourceId": {
       "value": ""

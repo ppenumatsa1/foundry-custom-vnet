@@ -6,13 +6,10 @@ param location = 'eastus2'
 param namePrefix = 'aifndcustomvnet'
 param vnetName = 'aifndcustomvnet-vnet'
 
-// Optional BYO paths
-param existingVnetResourceId = ''
+// Subnet naming
 param agentSubnetName = 'snet-agent'
 param peSubnetName = 'snet-private-endpoints'
 param managementSubnetName = 'snet-management'
-param bastionSubnetName = 'AzureBastionSubnet'
-param firewallSubnetName = 'AzureFirewallSubnet'
 
 param aiSearchResourceId = ''
 param azureStorageAccountResourceId = ''

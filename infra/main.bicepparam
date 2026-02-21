@@ -1,22 +1,19 @@
 using './main.bicep'
 
 param location = 'eastus2'
-param namePrefix = 'aifndbyovnet'
+param namePrefix = 'aifndcustomvnet'
 
 // Resource naming
-param vnetName = 'aifndbyovnet-vnet'
-param foundryAccountName = 'aifndbyovnetacct'
+param vnetName = 'aifndcustomvnet-vnet'
+param foundryAccountName = 'aifndcustomvnetacct'
 param foundryProjectName = 'private-project'
 param foundryProjectDisplayName = 'Private Project'
-param foundryProjectDescription = 'Private AI Foundry project in BYO VNet'
+param foundryProjectDescription = 'Private AI Foundry project in custom VNet'
 
-// Optional BYO paths
-param existingVnetResourceId = ''
+// Subnet naming
 param agentSubnetName = 'snet-agent'
 param peSubnetName = 'snet-private-endpoints'
 param managementSubnetName = 'snet-management'
-param bastionSubnetName = 'AzureBastionSubnet'
-param firewallSubnetName = 'AzureFirewallSubnet'
 
 param aiSearchResourceId = ''
 param azureStorageAccountResourceId = ''

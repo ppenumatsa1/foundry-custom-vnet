@@ -9,9 +9,6 @@ param namePrefix string = 'aifnd'
 @description('Virtual network name')
 param vnetName string = '${namePrefix}-vnet'
 
-@description('Existing VNet resource ID (optional). If set, existing VNet path is used.')
-param existingVnetResourceId string = ''
-
 @description('Agent subnet name')
 param agentSubnetName string = 'snet-agent'
 
@@ -20,12 +17,6 @@ param peSubnetName string = 'snet-private-endpoints'
 
 @description('Management subnet name')
 param managementSubnetName string = 'snet-management'
-
-@description('Bastion subnet name')
-param bastionSubnetName string = 'AzureBastionSubnet'
-
-@description('Firewall subnet name')
-param firewallSubnetName string = 'AzureFirewallSubnet'
 
 @description('Foundry account name (must be globally unique)')
 param foundryAccountName string = '${namePrefix}${uniqueString(resourceGroup().id)}'
@@ -101,12 +92,6 @@ param bastionSubnetPrefix string = '10.50.3.0/26'
 param firewallSubnetPrefix string = '10.50.4.0/26'
 
 var shortSuffix = take(uniqueString(resourceGroup().id), 6)
-var existingVnetPassedIn = existingVnetResourceId != ''
-var vnetParts = split(existingVnetResourceId, '/')
-var existingVnetSubscriptionId = existingVnetPassedIn ? vnetParts[2] : subscription().subscriptionId
-var existingVnetResourceGroupName = existingVnetPassedIn ? vnetParts[4] : resourceGroup().name
-var resolvedVnetName = existingVnetPassedIn ? last(vnetParts) : vnetName
-var resolvedAgentSubnetId = existingVnetPassedIn ? '${existingVnetResourceId}/subnets/${agentSubnetName}' : network.outputs.agentSubnetId
 #disable-next-line BCP318
 var firewallNextHopIp = enableFirewall ? firewall.outputs.firewallPrivateIp! : ''
 var gpt41Deployment = {
@@ -143,19 +128,14 @@ module validateExistingResources 'modules/data/validate-existing-resources.bicep
   }
 }
 
-module network 'modules/network/network-agent-vnet.bicep' = {
+module network 'modules/network/vnet.bicep' = {
   name: 'network-${shortSuffix}'
   params: {
     location: location
-    vnetName: resolvedVnetName
-    useExistingVnet: existingVnetPassedIn
-    existingVnetSubscriptionId: existingVnetSubscriptionId
-    existingVnetResourceGroupName: existingVnetResourceGroupName
+    vnetName: vnetName
     agentSubnetName: agentSubnetName
     peSubnetName: peSubnetName
     managementSubnetName: managementSubnetName
-    bastionSubnetName: bastionSubnetName
-    firewallSubnetName: firewallSubnetName
     vnetAddressPrefix: vnetAddressPrefix
     agentSubnetPrefix: agentSubnetPrefix
     peSubnetPrefix: peSubnetPrefix
@@ -186,7 +166,7 @@ module foundry 'modules/foundry/account-project.bicep' = {
     projectName: foundryProjectName
     projectDisplayName: foundryProjectDisplayName
     projectDescription: foundryProjectDescription
-    agentSubnetId: resolvedAgentSubnetId
+    agentSubnetId: network.outputs.agentSubnetId
   }
 }
 
@@ -234,7 +214,7 @@ module firewall 'modules/network/firewall-egress.bicep' = if (enableFirewall) {
   }
 }
 
-module managementRouting 'modules/network/routing.bicep' = if (enableFirewall && existingVnetPassedIn) {
+module managementRouting 'modules/network/routing.bicep' = if (enableFirewall) {
   name: 'routing-${shortSuffix}'
   params: {
      location: location
@@ -246,7 +226,7 @@ module managementRouting 'modules/network/routing.bicep' = if (enableFirewall &&
   }
 }
 
-module agentRouting 'modules/network/routing.bicep' = if (enableFirewall && existingVnetPassedIn) {
+module agentRouting 'modules/network/routing.bicep' = if (enableFirewall) {
   name: 'routing-agent-${shortSuffix}'
   params: {
       location: location
@@ -412,7 +392,7 @@ module addProjectCapabilityHost 'modules/foundry/add-project-capability-host.bic
     accountName: foundry.outputs.accountNameOut
     projectName: foundry.outputs.projectNameOut
     projectCapHost: projectCapHost
-    customerSubnetId: resolvedAgentSubnetId
+    customerSubnetId: network.outputs.agentSubnetId
     cosmosDBConnection: dependencies.outputs.cosmosName
     azureStorageConnection: dependencies.outputs.storageName
     aiSearchConnection: dependencies.outputs.searchName

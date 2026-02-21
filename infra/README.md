@@ -67,32 +67,15 @@ azd provision
 - Foundry account is configured as **All Networks** (`publicNetworkAccess: Enabled`, `networkAcls.defaultAction: Allow`).
 - Storage, Search, and Cosmos remain private behind private endpoints.
 
-## New vs Existing (BYO) modes
+## Networking mode
 
-The templates support two patterns in the same codebase:
+The templates now use a **single networking mode**:
 
-1. **Create new resources (default)**
-   - Leave these empty:
-   - `existingVnetResourceId`
-   - `aiSearchResourceId`
-   - `azureStorageAccountResourceId`
-   - `azureCosmosDBAccountResourceId`
+- A new VNet and all required subnets are created by this deployment.
+- Agent subnet delegation (`Microsoft.App/environments`) is managed in-template.
+- When `enableFirewall=true`, UDR route tables are applied to management and agent subnets.
 
-- VNet behavior: when `existingVnetResourceId` is empty, the deployment **creates a new VNet and subnets**.
-
-2. **Bring your own existing resources**
-   - Provide one or more of the IDs above.
-   - The deployment will reference existing resources instead of creating new ones.
-
-- VNet behavior: when `existingVnetResourceId` is provided, the deployment **uses that existing VNet** and expects the named subnets to exist.
-
-### VNet selection precedence
-
-- `existingVnetResourceId == ''` → create new VNet path.
-- `existingVnetResourceId != ''` → existing VNet path.
-- If both `vnetName` and `existingVnetResourceId` are set, `existingVnetResourceId` takes precedence.
-
-### BYO DNS zones
+### Existing DNS zone reuse
 
 - Use `existingDnsZones` map to point zone FQDNs to existing DNS zone resource groups.
 - Use `dnsZonesSubscriptionId` when DNS zones are in another subscription.

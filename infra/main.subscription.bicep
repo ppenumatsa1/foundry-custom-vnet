@@ -7,13 +7,10 @@ param resourceGroupName string = 'rg-foundry-custom-vnet'
 param location string = 'eastus2'
 
 @description('Prefix used for resource names')
-param namePrefix string = 'aifndbyovnet'
+param namePrefix string = 'aifndcustomvnet'
 
 @description('Virtual network name')
 param vnetName string = '${namePrefix}-vnet'
-
-@description('Existing VNet resource ID (optional)')
-param existingVnetResourceId string = ''
 
 @description('Agent subnet name')
 param agentSubnetName string = 'snet-agent'
@@ -23,12 +20,6 @@ param peSubnetName string = 'snet-private-endpoints'
 
 @description('Management subnet name')
 param managementSubnetName string = 'snet-management'
-
-@description('Bastion subnet name')
-param bastionSubnetName string = 'AzureBastionSubnet'
-
-@description('Firewall subnet name')
-param firewallSubnetName string = 'AzureFirewallSubnet'
 
 @description('Foundry account name (must be globally unique)')
 param foundryAccountName string = '${namePrefix}${uniqueString(subscription().id, resourceGroupName)}'
@@ -40,7 +31,7 @@ param foundryProjectName string = 'private-project'
 param foundryProjectDisplayName string = 'Private Project'
 
 @description('Foundry project description')
-param foundryProjectDescription string = 'Private AI Foundry project in BYO VNet'
+param foundryProjectDescription string = 'Private AI Foundry project in custom VNet'
 
 @description('Project capability host name')
 param projectCapHost string = 'caphostproj'
@@ -115,12 +106,9 @@ module rgDeployment 'main.bicep' = {
     location: location
     namePrefix: namePrefix
     vnetName: vnetName
-    existingVnetResourceId: existingVnetResourceId
     agentSubnetName: agentSubnetName
     peSubnetName: peSubnetName
     managementSubnetName: managementSubnetName
-    bastionSubnetName: bastionSubnetName
-    firewallSubnetName: firewallSubnetName
     foundryAccountName: foundryAccountName
     foundryProjectName: foundryProjectName
     foundryProjectDisplayName: foundryProjectDisplayName

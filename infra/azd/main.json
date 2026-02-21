@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.37.4.10188",
-      "templateHash": "14933855510593182572"
+      "templateHash": "7041501760029514066"
     }
   },
   "parameters": {
@@ -37,13 +37,6 @@
         "description": "Virtual network name"
       }
     },
-    "existingVnetResourceId": {
-      "type": "string",
-      "defaultValue": "",
-      "metadata": {
-        "description": "Existing VNet resource ID (optional)"
-      }
-    },
     "agentSubnetName": {
       "type": "string",
       "defaultValue": "snet-agent",
@@ -63,20 +56,6 @@
       "defaultValue": "snet-management",
       "metadata": {
         "description": "Management subnet name"
-      }
-    },
-    "bastionSubnetName": {
-      "type": "string",
-      "defaultValue": "AzureBastionSubnet",
-      "metadata": {
-        "description": "Bastion subnet name"
-      }
-    },
-    "firewallSubnetName": {
-      "type": "string",
-      "defaultValue": "AzureFirewallSubnet",
-      "metadata": {
-        "description": "Firewall subnet name"
       }
     },
     "foundryAccountName": {
@@ -250,9 +229,6 @@
           "vnetName": {
             "value": "[parameters('vnetName')]"
           },
-          "existingVnetResourceId": {
-            "value": "[parameters('existingVnetResourceId')]"
-          },
           "agentSubnetName": {
             "value": "[parameters('agentSubnetName')]"
           },
@@ -261,12 +237,6 @@
           },
           "managementSubnetName": {
             "value": "[parameters('managementSubnetName')]"
-          },
-          "bastionSubnetName": {
-            "value": "[parameters('bastionSubnetName')]"
-          },
-          "firewallSubnetName": {
-            "value": "[parameters('firewallSubnetName')]"
           },
           "foundryAccountName": {
             "value": "[parameters('foundryAccountName')]"
@@ -339,7 +309,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.37.4.10188",
-              "templateHash": "8423112440856951935"
+              "templateHash": "2439871184533735711"
             }
           },
           "parameters": {
@@ -359,7 +329,7 @@
             },
             "namePrefix": {
               "type": "string",
-              "defaultValue": "aifndbyovnet",
+              "defaultValue": "aifndcustomvnet",
               "metadata": {
                 "description": "Prefix used for resource names"
               }
@@ -369,13 +339,6 @@
               "defaultValue": "[format('{0}-vnet', parameters('namePrefix'))]",
               "metadata": {
                 "description": "Virtual network name"
-              }
-            },
-            "existingVnetResourceId": {
-              "type": "string",
-              "defaultValue": "",
-              "metadata": {
-                "description": "Existing VNet resource ID (optional)"
               }
             },
             "agentSubnetName": {
@@ -397,20 +360,6 @@
               "defaultValue": "snet-management",
               "metadata": {
                 "description": "Management subnet name"
-              }
-            },
-            "bastionSubnetName": {
-              "type": "string",
-              "defaultValue": "AzureBastionSubnet",
-              "metadata": {
-                "description": "Bastion subnet name"
-              }
-            },
-            "firewallSubnetName": {
-              "type": "string",
-              "defaultValue": "AzureFirewallSubnet",
-              "metadata": {
-                "description": "Firewall subnet name"
               }
             },
             "foundryAccountName": {
@@ -436,7 +385,7 @@
             },
             "foundryProjectDescription": {
               "type": "string",
-              "defaultValue": "Private AI Foundry project in BYO VNet",
+              "defaultValue": "Private AI Foundry project in custom VNet",
               "metadata": {
                 "description": "Foundry project description"
               }
@@ -608,9 +557,6 @@
                   "vnetName": {
                     "value": "[parameters('vnetName')]"
                   },
-                  "existingVnetResourceId": {
-                    "value": "[parameters('existingVnetResourceId')]"
-                  },
                   "agentSubnetName": {
                     "value": "[parameters('agentSubnetName')]"
                   },
@@ -619,12 +565,6 @@
                   },
                   "managementSubnetName": {
                     "value": "[parameters('managementSubnetName')]"
-                  },
-                  "bastionSubnetName": {
-                    "value": "[parameters('bastionSubnetName')]"
-                  },
-                  "firewallSubnetName": {
-                    "value": "[parameters('firewallSubnetName')]"
                   },
                   "foundryAccountName": {
                     "value": "[parameters('foundryAccountName')]"
@@ -706,7 +646,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.37.4.10188",
-                      "templateHash": "2599574869650281321"
+                      "templateHash": "2812208913199386813"
                     }
                   },
                   "parameters": {
@@ -731,13 +671,6 @@
                         "description": "Virtual network name"
                       }
                     },
-                    "existingVnetResourceId": {
-                      "type": "string",
-                      "defaultValue": "",
-                      "metadata": {
-                        "description": "Existing VNet resource ID (optional). If set, existing VNet path is used."
-                      }
-                    },
                     "agentSubnetName": {
                       "type": "string",
                       "defaultValue": "snet-agent",
@@ -757,20 +690,6 @@
                       "defaultValue": "snet-management",
                       "metadata": {
                         "description": "Management subnet name"
-                      }
-                    },
-                    "bastionSubnetName": {
-                      "type": "string",
-                      "defaultValue": "AzureBastionSubnet",
-                      "metadata": {
-                        "description": "Bastion subnet name"
-                      }
-                    },
-                    "firewallSubnetName": {
-                      "type": "string",
-                      "defaultValue": "AzureFirewallSubnet",
-                      "metadata": {
-                        "description": "Firewall subnet name"
                       }
                     },
                     "foundryAccountName": {
@@ -943,11 +862,6 @@
                   },
                   "variables": {
                     "shortSuffix": "[take(uniqueString(resourceGroup().id), 6)]",
-                    "existingVnetPassedIn": "[not(equals(parameters('existingVnetResourceId'), ''))]",
-                    "vnetParts": "[split(parameters('existingVnetResourceId'), '/')]",
-                    "existingVnetSubscriptionId": "[if(variables('existingVnetPassedIn'), variables('vnetParts')[2], subscription().subscriptionId)]",
-                    "existingVnetResourceGroupName": "[if(variables('existingVnetPassedIn'), variables('vnetParts')[4], resourceGroup().name)]",
-                    "resolvedVnetName": "[if(variables('existingVnetPassedIn'), last(variables('vnetParts')), parameters('vnetName'))]",
                     "gpt41Deployment": {
                       "name": "gpt-4.1",
                       "modelName": "gpt-4.1",
@@ -1103,16 +1017,7 @@
                             "value": "[parameters('location')]"
                           },
                           "vnetName": {
-                            "value": "[variables('resolvedVnetName')]"
-                          },
-                          "useExistingVnet": {
-                            "value": "[variables('existingVnetPassedIn')]"
-                          },
-                          "existingVnetSubscriptionId": {
-                            "value": "[variables('existingVnetSubscriptionId')]"
-                          },
-                          "existingVnetResourceGroupName": {
-                            "value": "[variables('existingVnetResourceGroupName')]"
+                            "value": "[parameters('vnetName')]"
                           },
                           "agentSubnetName": {
                             "value": "[parameters('agentSubnetName')]"
@@ -1122,12 +1027,6 @@
                           },
                           "managementSubnetName": {
                             "value": "[parameters('managementSubnetName')]"
-                          },
-                          "bastionSubnetName": {
-                            "value": "[parameters('bastionSubnetName')]"
-                          },
-                          "firewallSubnetName": {
-                            "value": "[parameters('firewallSubnetName')]"
                           },
                           "vnetAddressPrefix": {
                             "value": "[parameters('vnetAddressPrefix')]"
@@ -1155,7 +1054,7 @@
                             "_generator": {
                               "name": "bicep",
                               "version": "0.37.4.10188",
-                              "templateHash": "13680109046170897339"
+                              "templateHash": "15353079719353782576"
                             }
                           },
                           "parameters": {
@@ -1168,35 +1067,28 @@
                             "vnetName": {
                               "type": "string",
                               "metadata": {
-                                "description": "VNet name"
+                                "description": "Virtual network name"
                               }
                             },
-                            "useExistingVnet": {
-                              "type": "bool",
-                              "defaultValue": false,
-                              "metadata": {
-                                "description": "Use existing VNet path"
-                              }
-                            },
-                            "existingVnetSubscriptionId": {
+                            "vnetAddressPrefix": {
                               "type": "string",
-                              "defaultValue": "[subscription().subscriptionId]",
+                              "defaultValue": "10.50.0.0/16",
                               "metadata": {
-                                "description": "Subscription ID of existing VNet"
-                              }
-                            },
-                            "existingVnetResourceGroupName": {
-                              "type": "string",
-                              "defaultValue": "[resourceGroup().name]",
-                              "metadata": {
-                                "description": "Resource group of existing VNet"
+                                "description": "VNet CIDR"
                               }
                             },
                             "agentSubnetName": {
                               "type": "string",
                               "defaultValue": "snet-agent",
                               "metadata": {
-                                "description": "Agent subnet name"
+                                "description": "Agent subnet name (delegated to Microsoft.App/environments)"
+                              }
+                            },
+                            "agentSubnetPrefix": {
+                              "type": "string",
+                              "defaultValue": "10.50.0.0/24",
+                              "metadata": {
+                                "description": "Agent subnet CIDR"
                               }
                             },
                             "peSubnetName": {
@@ -1206,546 +1098,126 @@
                                 "description": "Private endpoint subnet name"
                               }
                             },
-                            "managementSubnetName": {
-                              "type": "string",
-                              "defaultValue": "snet-management",
-                              "metadata": {
-                                "description": "Management subnet name"
-                              }
-                            },
-                            "bastionSubnetName": {
-                              "type": "string",
-                              "defaultValue": "AzureBastionSubnet",
-                              "metadata": {
-                                "description": "Bastion subnet name"
-                              }
-                            },
-                            "firewallSubnetName": {
-                              "type": "string",
-                              "defaultValue": "AzureFirewallSubnet",
-                              "metadata": {
-                                "description": "Firewall subnet name"
-                              }
-                            },
-                            "vnetAddressPrefix": {
-                              "type": "string",
-                              "defaultValue": "10.50.0.0/16",
-                              "metadata": {
-                                "description": "VNet CIDR (new VNet only)"
-                              }
-                            },
-                            "agentSubnetPrefix": {
-                              "type": "string",
-                              "defaultValue": "10.50.0.0/24",
-                              "metadata": {
-                                "description": "Agent subnet CIDR (new VNet only)"
-                              }
-                            },
                             "peSubnetPrefix": {
                               "type": "string",
                               "defaultValue": "10.50.1.0/24",
                               "metadata": {
-                                "description": "PE subnet CIDR (new VNet only)"
+                                "description": "Private endpoint subnet CIDR"
+                              }
+                            },
+                            "managementSubnetName": {
+                              "type": "string",
+                              "defaultValue": "snet-management",
+                              "metadata": {
+                                "description": "Subnet name for jumpbox VM"
                               }
                             },
                             "managementSubnetPrefix": {
                               "type": "string",
                               "defaultValue": "10.50.2.0/24",
                               "metadata": {
-                                "description": "Management subnet CIDR (new VNet only)"
+                                "description": "Subnet CIDR for jumpbox VM"
                               }
                             },
                             "bastionSubnetPrefix": {
                               "type": "string",
                               "defaultValue": "10.50.3.0/26",
                               "metadata": {
-                                "description": "Bastion subnet CIDR (new VNet only)"
+                                "description": "Azure Bastion subnet CIDR"
                               }
                             },
                             "firewallSubnetPrefix": {
                               "type": "string",
                               "defaultValue": "10.50.4.0/26",
                               "metadata": {
-                                "description": "Firewall subnet CIDR (new VNet only)"
+                                "description": "Azure Firewall subnet CIDR"
                               }
                             }
                           },
                           "resources": [
                             {
-                              "condition": "[not(parameters('useExistingVnet'))]",
-                              "type": "Microsoft.Resources/deployments",
-                              "apiVersion": "2022-09-01",
-                              "name": "new-vnet",
+                              "type": "Microsoft.Network/virtualNetworks",
+                              "apiVersion": "2024-05-01",
+                              "name": "[parameters('vnetName')]",
+                              "location": "[parameters('location')]",
                               "properties": {
-                                "expressionEvaluationOptions": {
-                                  "scope": "inner"
+                                "addressSpace": {
+                                  "addressPrefixes": [
+                                    "[parameters('vnetAddressPrefix')]"
+                                  ]
                                 },
-                                "mode": "Incremental",
-                                "parameters": {
-                                  "location": {
-                                    "value": "[parameters('location')]"
-                                  },
-                                  "vnetName": {
-                                    "value": "[parameters('vnetName')]"
-                                  },
-                                  "vnetAddressPrefix": {
-                                    "value": "[parameters('vnetAddressPrefix')]"
-                                  },
-                                  "agentSubnetName": {
-                                    "value": "[parameters('agentSubnetName')]"
-                                  },
-                                  "agentSubnetPrefix": {
-                                    "value": "[parameters('agentSubnetPrefix')]"
-                                  },
-                                  "peSubnetName": {
-                                    "value": "[parameters('peSubnetName')]"
-                                  },
-                                  "peSubnetPrefix": {
-                                    "value": "[parameters('peSubnetPrefix')]"
-                                  },
-                                  "managementSubnetName": {
-                                    "value": "[parameters('managementSubnetName')]"
-                                  },
-                                  "managementSubnetPrefix": {
-                                    "value": "[parameters('managementSubnetPrefix')]"
-                                  },
-                                  "bastionSubnetPrefix": {
-                                    "value": "[parameters('bastionSubnetPrefix')]"
-                                  },
-                                  "firewallSubnetPrefix": {
-                                    "value": "[parameters('firewallSubnetPrefix')]"
-                                  }
-                                },
-                                "template": {
-                                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                                  "contentVersion": "1.0.0.0",
-                                  "metadata": {
-                                    "_generator": {
-                                      "name": "bicep",
-                                      "version": "0.37.4.10188",
-                                      "templateHash": "15353079719353782576"
-                                    }
-                                  },
-                                  "parameters": {
-                                    "location": {
-                                      "type": "string",
-                                      "metadata": {
-                                        "description": "Azure region"
-                                      }
-                                    },
-                                    "vnetName": {
-                                      "type": "string",
-                                      "metadata": {
-                                        "description": "Virtual network name"
-                                      }
-                                    },
-                                    "vnetAddressPrefix": {
-                                      "type": "string",
-                                      "defaultValue": "10.50.0.0/16",
-                                      "metadata": {
-                                        "description": "VNet CIDR"
-                                      }
-                                    },
-                                    "agentSubnetName": {
-                                      "type": "string",
-                                      "defaultValue": "snet-agent",
-                                      "metadata": {
-                                        "description": "Agent subnet name (delegated to Microsoft.App/environments)"
-                                      }
-                                    },
-                                    "agentSubnetPrefix": {
-                                      "type": "string",
-                                      "defaultValue": "10.50.0.0/24",
-                                      "metadata": {
-                                        "description": "Agent subnet CIDR"
-                                      }
-                                    },
-                                    "peSubnetName": {
-                                      "type": "string",
-                                      "defaultValue": "snet-private-endpoints",
-                                      "metadata": {
-                                        "description": "Private endpoint subnet name"
-                                      }
-                                    },
-                                    "peSubnetPrefix": {
-                                      "type": "string",
-                                      "defaultValue": "10.50.1.0/24",
-                                      "metadata": {
-                                        "description": "Private endpoint subnet CIDR"
-                                      }
-                                    },
-                                    "managementSubnetName": {
-                                      "type": "string",
-                                      "defaultValue": "snet-management",
-                                      "metadata": {
-                                        "description": "Subnet name for jumpbox VM"
-                                      }
-                                    },
-                                    "managementSubnetPrefix": {
-                                      "type": "string",
-                                      "defaultValue": "10.50.2.0/24",
-                                      "metadata": {
-                                        "description": "Subnet CIDR for jumpbox VM"
-                                      }
-                                    },
-                                    "bastionSubnetPrefix": {
-                                      "type": "string",
-                                      "defaultValue": "10.50.3.0/26",
-                                      "metadata": {
-                                        "description": "Azure Bastion subnet CIDR"
-                                      }
-                                    },
-                                    "firewallSubnetPrefix": {
-                                      "type": "string",
-                                      "defaultValue": "10.50.4.0/26",
-                                      "metadata": {
-                                        "description": "Azure Firewall subnet CIDR"
-                                      }
-                                    }
-                                  },
-                                  "resources": [
-                                    {
-                                      "type": "Microsoft.Network/virtualNetworks",
-                                      "apiVersion": "2024-05-01",
-                                      "name": "[parameters('vnetName')]",
-                                      "location": "[parameters('location')]",
-                                      "properties": {
-                                        "addressSpace": {
-                                          "addressPrefixes": [
-                                            "[parameters('vnetAddressPrefix')]"
-                                          ]
-                                        },
-                                        "subnets": [
-                                          {
-                                            "name": "[parameters('agentSubnetName')]",
-                                            "properties": {
-                                              "addressPrefix": "[parameters('agentSubnetPrefix')]",
-                                              "delegations": [
-                                                {
-                                                  "name": "delegation-agent",
-                                                  "properties": {
-                                                    "serviceName": "Microsoft.App/environments"
-                                                  }
-                                                }
-                                              ]
-                                            }
-                                          },
-                                          {
-                                            "name": "[parameters('peSubnetName')]",
-                                            "properties": {
-                                              "addressPrefix": "[parameters('peSubnetPrefix')]",
-                                              "privateEndpointNetworkPolicies": "Disabled"
-                                            }
-                                          },
-                                          {
-                                            "name": "[parameters('managementSubnetName')]",
-                                            "properties": {
-                                              "addressPrefix": "[parameters('managementSubnetPrefix')]"
-                                            }
-                                          },
-                                          {
-                                            "name": "AzureBastionSubnet",
-                                            "properties": {
-                                              "addressPrefix": "[parameters('bastionSubnetPrefix')]"
-                                            }
-                                          },
-                                          {
-                                            "name": "AzureFirewallSubnet",
-                                            "properties": {
-                                              "addressPrefix": "[parameters('firewallSubnetPrefix')]"
-                                            }
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ],
-                                  "outputs": {
-                                    "vnetId": {
-                                      "type": "string",
-                                      "value": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
-                                    },
-                                    "vnetNameOut": {
-                                      "type": "string",
-                                      "value": "[parameters('vnetName')]"
-                                    },
-                                    "agentSubnetId": {
-                                      "type": "string",
-                                      "value": "[format('{0}/subnets/{1}', resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), parameters('agentSubnetName'))]"
-                                    },
-                                    "peSubnetId": {
-                                      "type": "string",
-                                      "value": "[format('{0}/subnets/{1}', resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), parameters('peSubnetName'))]"
-                                    },
-                                    "managementSubnetId": {
-                                      "type": "string",
-                                      "value": "[format('{0}/subnets/{1}', resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), parameters('managementSubnetName'))]"
-                                    },
-                                    "bastionSubnetId": {
-                                      "type": "string",
-                                      "value": "[format('{0}/subnets/AzureBastionSubnet', resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')))]"
-                                    },
-                                    "firewallSubnetId": {
-                                      "type": "string",
-                                      "value": "[format('{0}/subnets/AzureFirewallSubnet', resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')))]"
-                                    }
-                                  }
-                                }
-                              }
-                            },
-                            {
-                              "condition": "[parameters('useExistingVnet')]",
-                              "type": "Microsoft.Resources/deployments",
-                              "apiVersion": "2022-09-01",
-                              "name": "existing-vnet",
-                              "properties": {
-                                "expressionEvaluationOptions": {
-                                  "scope": "inner"
-                                },
-                                "mode": "Incremental",
-                                "parameters": {
-                                  "vnetName": {
-                                    "value": "[parameters('vnetName')]"
-                                  },
-                                  "vnetSubscriptionId": {
-                                    "value": "[parameters('existingVnetSubscriptionId')]"
-                                  },
-                                  "vnetResourceGroupName": {
-                                    "value": "[parameters('existingVnetResourceGroupName')]"
-                                  },
-                                  "agentSubnetName": {
-                                    "value": "[parameters('agentSubnetName')]"
-                                  },
-                                  "agentSubnetPrefix": {
-                                    "value": "[parameters('agentSubnetPrefix')]"
-                                  },
-                                  "peSubnetName": {
-                                    "value": "[parameters('peSubnetName')]"
-                                  },
-                                  "managementSubnetName": {
-                                    "value": "[parameters('managementSubnetName')]"
-                                  },
-                                  "bastionSubnetName": {
-                                    "value": "[parameters('bastionSubnetName')]"
-                                  },
-                                  "firewallSubnetName": {
-                                    "value": "[parameters('firewallSubnetName')]"
-                                  }
-                                },
-                                "template": {
-                                  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                                  "contentVersion": "1.0.0.0",
-                                  "metadata": {
-                                    "_generator": {
-                                      "name": "bicep",
-                                      "version": "0.37.4.10188",
-                                      "templateHash": "17801600700511219113"
-                                    }
-                                  },
-                                  "parameters": {
-                                    "vnetName": {
-                                      "type": "string",
-                                      "metadata": {
-                                        "description": "Existing VNet name"
-                                      }
-                                    },
-                                    "vnetSubscriptionId": {
-                                      "type": "string",
-                                      "defaultValue": "[subscription().subscriptionId]",
-                                      "metadata": {
-                                        "description": "Subscription ID of existing VNet"
-                                      }
-                                    },
-                                    "vnetResourceGroupName": {
-                                      "type": "string",
-                                      "defaultValue": "[resourceGroup().name]",
-                                      "metadata": {
-                                        "description": "Resource group of existing VNet"
-                                      }
-                                    },
-                                    "agentSubnetName": {
-                                      "type": "string",
-                                      "defaultValue": "snet-agent",
-                                      "metadata": {
-                                        "description": "Agent subnet name"
-                                      }
-                                    },
-                                    "agentSubnetPrefix": {
-                                      "type": "string",
-                                      "defaultValue": "",
-                                      "metadata": {
-                                        "description": "Agent subnet CIDR (optional). If empty, existing subnet prefix is reused while enforcing delegation."
-                                      }
-                                    },
-                                    "peSubnetName": {
-                                      "type": "string",
-                                      "defaultValue": "snet-private-endpoints",
-                                      "metadata": {
-                                        "description": "Private endpoint subnet name"
-                                      }
-                                    },
-                                    "managementSubnetName": {
-                                      "type": "string",
-                                      "defaultValue": "snet-management",
-                                      "metadata": {
-                                        "description": "Management subnet name"
-                                      }
-                                    },
-                                    "bastionSubnetName": {
-                                      "type": "string",
-                                      "defaultValue": "AzureBastionSubnet",
-                                      "metadata": {
-                                        "description": "Bastion subnet name"
-                                      }
-                                    },
-                                    "firewallSubnetName": {
-                                      "type": "string",
-                                      "defaultValue": "AzureFirewallSubnet",
-                                      "metadata": {
-                                        "description": "Firewall subnet name"
-                                      }
-                                    }
-                                  },
-                                  "resources": [
-                                    {
-                                      "type": "Microsoft.Resources/deployments",
-                                      "apiVersion": "2022-09-01",
-                                      "name": "[format('delegate-agent-subnet-{0}', uniqueString(parameters('vnetName'), parameters('agentSubnetName')))]",
-                                      "subscriptionId": "[parameters('vnetSubscriptionId')]",
-                                      "resourceGroup": "[parameters('vnetResourceGroupName')]",
-                                      "properties": {
-                                        "expressionEvaluationOptions": {
-                                          "scope": "inner"
-                                        },
-                                        "mode": "Incremental",
-                                        "parameters": {
-                                          "vnetName": {
-                                            "value": "[parameters('vnetName')]"
-                                          },
-                                          "subnetName": {
-                                            "value": "[parameters('agentSubnetName')]"
-                                          },
-                                          "subnetPrefix": "[if(empty(parameters('agentSubnetPrefix')), createObject('value', reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('agentSubnetName')), '2024-05-01').addressPrefix), createObject('value', parameters('agentSubnetPrefix')))]"
-                                        },
-                                        "template": {
-                                          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-                                          "contentVersion": "1.0.0.0",
-                                          "metadata": {
-                                            "_generator": {
-                                              "name": "bicep",
-                                              "version": "0.37.4.10188",
-                                              "templateHash": "11148140982073889695"
-                                            }
-                                          },
-                                          "parameters": {
-                                            "vnetName": {
-                                              "type": "string",
-                                              "metadata": {
-                                                "description": "Virtual network name"
-                                              }
-                                            },
-                                            "subnetName": {
-                                              "type": "string",
-                                              "metadata": {
-                                                "description": "Subnet name"
-                                              }
-                                            },
-                                            "subnetPrefix": {
-                                              "type": "string",
-                                              "metadata": {
-                                                "description": "Subnet CIDR prefix"
-                                              }
-                                            }
-                                          },
-                                          "resources": [
-                                            {
-                                              "type": "Microsoft.Network/virtualNetworks/subnets",
-                                              "apiVersion": "2024-05-01",
-                                              "name": "[format('{0}/{1}', parameters('vnetName'), parameters('subnetName'))]",
-                                              "properties": {
-                                                "addressPrefix": "[parameters('subnetPrefix')]",
-                                                "delegations": [
-                                                  {
-                                                    "name": "delegation-agent",
-                                                    "properties": {
-                                                      "serviceName": "Microsoft.App/environments"
-                                                    }
-                                                  }
-                                                ]
-                                              }
-                                            }
-                                          ],
-                                          "outputs": {
-                                            "subnetId": {
-                                              "type": "string",
-                                              "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', split(format('{0}/{1}', parameters('vnetName'), parameters('subnetName')), '/')[0], split(format('{0}/{1}', parameters('vnetName'), parameters('subnetName')), '/')[1])]"
-                                            }
+                                "subnets": [
+                                  {
+                                    "name": "[parameters('agentSubnetName')]",
+                                    "properties": {
+                                      "addressPrefix": "[parameters('agentSubnetPrefix')]",
+                                      "delegations": [
+                                        {
+                                          "name": "delegation-agent",
+                                          "properties": {
+                                            "serviceName": "Microsoft.App/environments"
                                           }
                                         }
-                                      }
+                                      ]
                                     }
-                                  ],
-                                  "outputs": {
-                                    "vnetId": {
-                                      "type": "string",
-                                      "value": "[extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
-                                    },
-                                    "vnetNameOut": {
-                                      "type": "string",
-                                      "value": "[parameters('vnetName')]"
-                                    },
-                                    "agentSubnetId": {
-                                      "type": "string",
-                                      "value": "[reference(extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Resources/deployments', format('delegate-agent-subnet-{0}', uniqueString(parameters('vnetName'), parameters('agentSubnetName')))), '2022-09-01').outputs.subnetId.value]"
-                                    },
-                                    "peSubnetId": {
-                                      "type": "string",
-                                      "value": "[format('{0}/subnets/{1}', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/virtualNetworks', parameters('vnetName')), parameters('peSubnetName'))]"
-                                    },
-                                    "managementSubnetId": {
-                                      "type": "string",
-                                      "value": "[format('{0}/subnets/{1}', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/virtualNetworks', parameters('vnetName')), parameters('managementSubnetName'))]"
-                                    },
-                                    "bastionSubnetId": {
-                                      "type": "string",
-                                      "value": "[format('{0}/subnets/{1}', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/virtualNetworks', parameters('vnetName')), parameters('bastionSubnetName'))]"
-                                    },
-                                    "firewallSubnetId": {
-                                      "type": "string",
-                                      "value": "[format('{0}/subnets/{1}', extensionResourceId(format('/subscriptions/{0}/resourceGroups/{1}', parameters('vnetSubscriptionId'), parameters('vnetResourceGroupName')), 'Microsoft.Network/virtualNetworks', parameters('vnetName')), parameters('firewallSubnetName'))]"
+                                  },
+                                  {
+                                    "name": "[parameters('peSubnetName')]",
+                                    "properties": {
+                                      "addressPrefix": "[parameters('peSubnetPrefix')]",
+                                      "privateEndpointNetworkPolicies": "Disabled"
+                                    }
+                                  },
+                                  {
+                                    "name": "[parameters('managementSubnetName')]",
+                                    "properties": {
+                                      "addressPrefix": "[parameters('managementSubnetPrefix')]"
+                                    }
+                                  },
+                                  {
+                                    "name": "AzureBastionSubnet",
+                                    "properties": {
+                                      "addressPrefix": "[parameters('bastionSubnetPrefix')]"
+                                    }
+                                  },
+                                  {
+                                    "name": "AzureFirewallSubnet",
+                                    "properties": {
+                                      "addressPrefix": "[parameters('firewallSubnetPrefix')]"
                                     }
                                   }
-                                }
+                                ]
                               }
                             }
                           ],
                           "outputs": {
                             "vnetId": {
                               "type": "string",
-                              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2022-09-01').outputs.vnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2022-09-01').outputs.vnetId.value)]"
+                              "value": "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
                             },
                             "vnetNameOut": {
                               "type": "string",
-                              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2022-09-01').outputs.vnetNameOut.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2022-09-01').outputs.vnetNameOut.value)]"
+                              "value": "[parameters('vnetName')]"
                             },
                             "agentSubnetId": {
                               "type": "string",
-                              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2022-09-01').outputs.agentSubnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2022-09-01').outputs.agentSubnetId.value)]"
+                              "value": "[format('{0}/subnets/{1}', resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), parameters('agentSubnetName'))]"
                             },
                             "peSubnetId": {
                               "type": "string",
-                              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2022-09-01').outputs.peSubnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2022-09-01').outputs.peSubnetId.value)]"
+                              "value": "[format('{0}/subnets/{1}', resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), parameters('peSubnetName'))]"
                             },
                             "managementSubnetId": {
                               "type": "string",
-                              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2022-09-01').outputs.managementSubnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2022-09-01').outputs.managementSubnetId.value)]"
+                              "value": "[format('{0}/subnets/{1}', resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')), parameters('managementSubnetName'))]"
                             },
                             "bastionSubnetId": {
                               "type": "string",
-                              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2022-09-01').outputs.bastionSubnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2022-09-01').outputs.bastionSubnetId.value)]"
+                              "value": "[format('{0}/subnets/AzureBastionSubnet', resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')))]"
                             },
                             "firewallSubnetId": {
                               "type": "string",
-                              "value": "[if(parameters('useExistingVnet'), reference(resourceId('Microsoft.Resources/deployments', 'existing-vnet'), '2022-09-01').outputs.firewallSubnetId.value, reference(resourceId('Microsoft.Resources/deployments', 'new-vnet'), '2022-09-01').outputs.firewallSubnetId.value)]"
+                              "value": "[format('{0}/subnets/AzureFirewallSubnet', resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')))]"
                             }
                           }
                         }
@@ -1963,7 +1435,9 @@
                           "projectDescription": {
                             "value": "[parameters('foundryProjectDescription')]"
                           },
-                          "agentSubnetId": "[if(variables('existingVnetPassedIn'), createObject('value', format('{0}/subnets/{1}', parameters('existingVnetResourceId'), parameters('agentSubnetName'))), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.agentSubnetId.value))]"
+                          "agentSubnetId": {
+                            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.agentSubnetId.value]"
+                          }
                         },
                         "template": {
                           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -3286,7 +2760,7 @@
                       ]
                     },
                     {
-                      "condition": "[and(parameters('enableFirewall'), variables('existingVnetPassedIn'))]",
+                      "condition": "[parameters('enableFirewall')]",
                       "type": "Microsoft.Resources/deployments",
                       "apiVersion": "2022-09-01",
                       "name": "[format('routing-{0}', variables('shortSuffix'))]",
@@ -3421,7 +2895,7 @@
                       ]
                     },
                     {
-                      "condition": "[and(parameters('enableFirewall'), variables('existingVnetPassedIn'))]",
+                      "condition": "[parameters('enableFirewall')]",
                       "type": "Microsoft.Resources/deployments",
                       "apiVersion": "2022-09-01",
                       "name": "[format('routing-agent-{0}', variables('shortSuffix'))]",
@@ -4695,7 +4169,9 @@
                           "projectCapHost": {
                             "value": "[parameters('projectCapHost')]"
                           },
-                          "customerSubnetId": "[if(variables('existingVnetPassedIn'), createObject('value', format('{0}/subnets/{1}', parameters('existingVnetResourceId'), parameters('agentSubnetName'))), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.agentSubnetId.value))]",
+                          "customerSubnetId": {
+                            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.agentSubnetId.value]"
+                          },
                           "cosmosDBConnection": {
                             "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2022-09-01').outputs.cosmosName.value]"
                           },
