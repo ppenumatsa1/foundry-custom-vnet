@@ -13,9 +13,6 @@ param projectDisplayName string
 @description('Project description')
 param projectDescription string
 
-@description('Agent subnet ARM resource ID used for Foundry Agent network injection')
-param agentSubnetId string
-
 resource aiFoundryAccount 'Microsoft.CognitiveServices/accounts@2025-06-01' = {
   name: accountName
   location: location
@@ -34,14 +31,6 @@ resource aiFoundryAccount 'Microsoft.CognitiveServices/accounts@2025-06-01' = {
       bypass: 'AzureServices'
       ipRules: []
     }
-    #disable-next-line BCP036
-    networkInjections: [
-      {
-        scenario: 'agent'
-        subnetArmId: agentSubnetId
-        useMicrosoftManagedNetwork: false
-      }
-    ]
     #disable-next-line BCP187
     allowProjectManagement: true
   }

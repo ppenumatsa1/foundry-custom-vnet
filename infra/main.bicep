@@ -1,16 +1,19 @@
-targetScope = 'resourceGroup'
+targetScope = 'subscription'
 
-@description('Deployment location')
-param location string = resourceGroup().location
+@description('Resource group name for the deployment')
+param resourceGroupName string = 'rg-foundry-custom-vnet'
+
+@description('Location for the resource group and deployment')
+param location string = 'eastus2'
 
 @description('Prefix used for resource names')
-param namePrefix string = 'aifnd'
+param namePrefix string = 'aifndcustomvnet'
 
 @description('Virtual network name')
 param vnetName string = '${namePrefix}-vnet'
 
 @description('Agent subnet name')
-param agentSubnetName string = 'snet-agent'
+param agentSubnetName string = 'snet-agent-host'
 
 @description('Private endpoint subnet name')
 param peSubnetName string = 'snet-private-endpoints'
@@ -19,28 +22,28 @@ param peSubnetName string = 'snet-private-endpoints'
 param managementSubnetName string = 'snet-management'
 
 @description('Foundry account name (must be globally unique)')
-param foundryAccountName string = '${namePrefix}${uniqueString(resourceGroup().id)}'
+param foundryAccountName string = '${namePrefix}${uniqueString(subscription().id, resourceGroupName)}'
 
 @description('Foundry project name')
-param foundryProjectName string = 'default-project'
+param foundryProjectName string = 'private-project'
 
 @description('Foundry project display name')
-param foundryProjectDisplayName string = 'Default Project'
+param foundryProjectDisplayName string = 'Private Project'
 
 @description('Foundry project description')
-param foundryProjectDescription string = 'Private network AI Foundry project'
+param foundryProjectDescription string = 'Private AI Foundry project in custom VNet'
 
 @description('Project capability host name')
 param projectCapHost string = 'caphostproj'
 
 @description('Storage account name')
-param storageAccountName string = '${take(replace(namePrefix, '-', ''), 10)}${take(uniqueString(resourceGroup().id), 10)}'
+param storageAccountName string = '${take(replace(namePrefix, '-', ''), 10)}${take(uniqueString(subscription().id, resourceGroupName), 10)}'
 
 @description('AI Search name')
-param searchServiceName string = '${namePrefix}-srch-${take(uniqueString(resourceGroup().id), 5)}'
+param searchServiceName string = '${namePrefix}-srch-${take(uniqueString(subscription().id, resourceGroupName), 5)}'
 
 @description('Cosmos account name')
-param cosmosAccountName string = '${namePrefix}-cosmos-${take(uniqueString(resourceGroup().id), 5)}'
+param cosmosAccountName string = '${namePrefix}-cosmos-${take(uniqueString(subscription().id, resourceGroupName), 5)}'
 
 @description('Existing AI Search resource ID (optional)')
 param aiSearchResourceId string = ''
@@ -77,7 +80,7 @@ param deployCapabilityHost bool = false
 param vnetAddressPrefix string = '10.50.0.0/16'
 
 @description('Agent subnet CIDR')
-param agentSubnetPrefix string = '10.50.0.0/24'
+param agentSubnetPrefix string = '10.50.5.0/24'
 
 @description('Private endpoint subnet CIDR')
 param peSubnetPrefix string = '10.50.1.0/24'
@@ -91,51 +94,39 @@ param bastionSubnetPrefix string = '10.50.3.0/26'
 @description('Firewall subnet CIDR')
 param firewallSubnetPrefix string = '10.50.4.0/26'
 
-var shortSuffix = take(uniqueString(resourceGroup().id), 6)
-#disable-next-line BCP318
-var firewallNextHopIp = enableFirewall ? firewall.outputs.firewallPrivateIp! : ''
-var gpt41Deployment = {
-  name: 'gpt-4.1'
-  modelName: 'gpt-4.1'
-  modelVersion: ''
-  modelPublisherFormat: 'OpenAI'
-  skuName: 'GlobalStandard'
-  capacity: 100
-}
-var gpt5Deployment = {
-  name: 'gpt-5'
-  modelName: 'gpt-5'
-  modelVersion: '2025-08-07'
-  modelPublisherFormat: 'OpenAI'
-  skuName: 'GlobalStandard'
-  capacity: 100
-}
-var textEmbeddingDeployment = {
-  name: 'text-embed-3-large'
-  modelName: 'text-embedding-3-large'
-  modelVersion: ''
-  modelPublisherFormat: 'OpenAI'
-  skuName: 'GlobalStandard'
-  capacity: 100
+resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
+  name: resourceGroupName
+  location: location
 }
 
-module validateExistingResources 'modules/data/validate-existing-resources.bicep' = {
-  name: 'validate-existing-${shortSuffix}'
-  params: {
-    aiSearchResourceId: aiSearchResourceId
-    azureStorageAccountResourceId: azureStorageAccountResourceId
-    azureCosmosDBAccountResourceId: azureCosmosDBAccountResourceId
-  }
-}
-
-module network 'modules/network/vnet.bicep' = {
-  name: 'network-${shortSuffix}'
+module rgDeployment 'main.rg.bicep' = {
+  name: 'rg-deployment-${uniqueString(resourceGroupName, location)}'
+  scope: resourceGroup(resourceGroupName)
   params: {
     location: location
+    namePrefix: namePrefix
     vnetName: vnetName
     agentSubnetName: agentSubnetName
     peSubnetName: peSubnetName
     managementSubnetName: managementSubnetName
+    foundryAccountName: foundryAccountName
+    foundryProjectName: foundryProjectName
+    foundryProjectDisplayName: foundryProjectDisplayName
+    foundryProjectDescription: foundryProjectDescription
+    projectCapHost: projectCapHost
+    storageAccountName: storageAccountName
+    searchServiceName: searchServiceName
+    cosmosAccountName: cosmosAccountName
+    aiSearchResourceId: aiSearchResourceId
+    azureStorageAccountResourceId: azureStorageAccountResourceId
+    azureCosmosDBAccountResourceId: azureCosmosDBAccountResourceId
+    dnsZonesSubscriptionId: dnsZonesSubscriptionId
+    existingDnsZones: existingDnsZones
+    jumpboxAdminUsername: jumpboxAdminUsername
+    jumpboxAdminPassword: jumpboxAdminPassword
+    enableFirewall: enableFirewall
+    deployModel: deployModel
+    deployCapabilityHost: deployCapabilityHost
     vnetAddressPrefix: vnetAddressPrefix
     agentSubnetPrefix: agentSubnetPrefix
     peSubnetPrefix: peSubnetPrefix
@@ -143,299 +134,12 @@ module network 'modules/network/vnet.bicep' = {
     bastionSubnetPrefix: bastionSubnetPrefix
     firewallSubnetPrefix: firewallSubnetPrefix
   }
-}
-
-module dependencies 'modules/data/dependencies.bicep' = {
-  name: 'dependencies-${shortSuffix}'
-  params: {
-    location: location
-    storageAccountName: validateExistingResources.outputs.azureStorageExists ? validateExistingResources.outputs.azureStorageName : storageAccountName
-    searchServiceName: validateExistingResources.outputs.aiSearchExists ? validateExistingResources.outputs.aiSearchName : searchServiceName
-    cosmosAccountName: validateExistingResources.outputs.cosmosDBExists ? validateExistingResources.outputs.cosmosDBName : cosmosAccountName
-    aiSearchResourceId: aiSearchResourceId
-    azureStorageAccountResourceId: azureStorageAccountResourceId
-    cosmosDBResourceId: azureCosmosDBAccountResourceId
-  }
-}
-
-module foundry 'modules/foundry/account-project.bicep' = {
-  name: 'foundry-${shortSuffix}'
-  params: {
-    location: location
-    accountName: toLower(foundryAccountName)
-    projectName: foundryProjectName
-    projectDisplayName: foundryProjectDisplayName
-    projectDescription: foundryProjectDescription
-    agentSubnetId: network.outputs.agentSubnetId
-  }
-}
-
-module privateConnectivity 'modules/network/private-endpoints-dns.bicep' = {
-  name: 'private-connectivity-${shortSuffix}'
-  params: {
-    location: location
-    vnetId: network.outputs.vnetId
-    peSubnetId: network.outputs.peSubnetId
-    aiFoundryAccountId: foundry.outputs.accountId
-    storageAccountId: dependencies.outputs.storageId
-    searchServiceId: dependencies.outputs.searchId
-    cosmosAccountId: dependencies.outputs.cosmosId
-    namePrefix: shortSuffix
-    existingDnsZones: existingDnsZones
-    dnsZonesSubscriptionId: dnsZonesSubscriptionId
-  }
   dependsOn: [
-    modelTextEmbedding
+    rg
   ]
 }
 
-module bastion 'modules/network/bastion.bicep' = {
-  name: 'bastion-${shortSuffix}'
-  params: {
-    location: location
-    bastionName: '${namePrefix}-bas-${shortSuffix}'
-    bastionPublicIpName: '${namePrefix}-bas-pip-${shortSuffix}'
-    bastionSubnetId: network.outputs.bastionSubnetId
-  }
-}
-
-module firewall 'modules/network/firewall-egress.bicep' = if (enableFirewall) {
-  name: 'firewall-${shortSuffix}'
-  params: {
-    location: location
-    firewallName: '${namePrefix}-afw-${shortSuffix}'
-    firewallPublicIpName: '${namePrefix}-afw-pip-${shortSuffix}'
-    firewallSubnetId: network.outputs.firewallSubnetId
-    enableEgressRules: true
-    sourceSubnetPrefixes: [
-      managementSubnetPrefix
-      agentSubnetPrefix
-    ]
-  }
-}
-
-module managementRouting 'modules/network/routing.bicep' = if (enableFirewall) {
-  name: 'routing-${shortSuffix}'
-  params: {
-     location: location
-    routeTableName: '${namePrefix}-rt-management-${shortSuffix}'
-    vnetName: network.outputs.vnetNameOut
-    subnetName: managementSubnetName
-    subnetPrefix: managementSubnetPrefix
-    firewallPrivateIp: firewallNextHopIp
-  }
-}
-
-module agentRouting 'modules/network/routing.bicep' = if (enableFirewall) {
-  name: 'routing-agent-${shortSuffix}'
-  params: {
-      location: location
-    routeTableName: '${namePrefix}-rt-agent-${shortSuffix}'
-    vnetName: network.outputs.vnetNameOut
-    subnetName: agentSubnetName
-    subnetPrefix: agentSubnetPrefix
-    subnetDelegations: [
-      {
-        name: 'delegation-agent'
-        properties: {
-          serviceName: 'Microsoft.App/environments'
-        }
-      }
-    ]
-    firewallPrivateIp: firewallNextHopIp
-  }
-  dependsOn: [
-    managementRouting
-  ]
-}
-
-module jumpbox 'modules/network/jumpbox-vm.bicep' = {
-  name: 'jumpbox-${shortSuffix}'
-  params: {
-    location: location
-    vmName: '${namePrefix}-jump-${shortSuffix}'
-    nicName: '${namePrefix}-jump-nic-${shortSuffix}'
-    subnetId: network.outputs.managementSubnetId
-    adminUsername: jumpboxAdminUsername
-    adminPassword: jumpboxAdminPassword
-  }
-}
-
-module modelGpt41 'modules/foundry/model-deployment.bicep' = if (deployModel) {
-  name: 'model-gpt41-${shortSuffix}'
-  params: {
-    accountName: foundry.outputs.accountNameOut
-    deploymentName: gpt41Deployment.name
-    modelName: gpt41Deployment.modelName
-    modelVersion: gpt41Deployment.modelVersion
-    modelPublisherFormat: gpt41Deployment.modelPublisherFormat
-    skuName: gpt41Deployment.skuName
-    capacity: gpt41Deployment.capacity
-  }
-}
-
-module modelGpt5 'modules/foundry/model-deployment.bicep' = if (deployModel) {
-  name: 'model-gpt5-${shortSuffix}'
-  params: {
-    accountName: foundry.outputs.accountNameOut
-    deploymentName: gpt5Deployment.name
-    modelName: gpt5Deployment.modelName
-    modelVersion: gpt5Deployment.modelVersion
-    modelPublisherFormat: gpt5Deployment.modelPublisherFormat
-    skuName: gpt5Deployment.skuName
-    capacity: gpt5Deployment.capacity
-  }
-  dependsOn: [
-    modelGpt41
-  ]
-}
-
-module modelTextEmbedding 'modules/foundry/model-deployment.bicep' = if (deployModel) {
-  name: 'model-textembed-${shortSuffix}'
-  params: {
-    accountName: foundry.outputs.accountNameOut
-    deploymentName: textEmbeddingDeployment.name
-    modelName: textEmbeddingDeployment.modelName
-    modelVersion: textEmbeddingDeployment.modelVersion
-    modelPublisherFormat: textEmbeddingDeployment.modelPublisherFormat
-    skuName: textEmbeddingDeployment.skuName
-    capacity: textEmbeddingDeployment.capacity
-  }
-  dependsOn: [
-    modelGpt5
-  ]
-}
-
-module formatProjectWorkspaceId 'modules/foundry/format-project-workspace-id.bicep' = {
-  name: 'workspace-id-${shortSuffix}'
-  params: {
-    projectWorkspaceId: foundry.outputs.projectWorkspaceId
-  }
-}
-
-module storageAccountRoleAssignment 'modules/identity/azure-storage-account-role-assignment.bicep' = {
-  name: 'storage-ra-${shortSuffix}'
-  params: {
-    azureStorageName: dependencies.outputs.storageName
-    projectPrincipalId: foundry.outputs.projectPrincipalId
-  }
-  dependsOn: [
-    privateConnectivity
-  ]
-}
-
-module cosmosAccountRoleAssignment 'modules/identity/cosmosdb-account-role-assignment.bicep' = {
-  name: 'cosmos-account-ra-${shortSuffix}'
-  params: {
-    cosmosDBName: dependencies.outputs.cosmosName
-    projectPrincipalId: foundry.outputs.projectPrincipalId
-  }
-  dependsOn: [
-    privateConnectivity
-  ]
-}
-
-module aiSearchRoleAssignments 'modules/identity/ai-search-role-assignments.bicep' = {
-  name: 'search-ra-${shortSuffix}'
-  params: {
-    aiSearchName: dependencies.outputs.searchName
-    projectPrincipalId: foundry.outputs.projectPrincipalId
-  }
-  dependsOn: [
-    privateConnectivity
-  ]
-}
-
-module jumpboxFoundryRoleAssignment 'modules/identity/foundry-account-role-assignment.bicep' = {
-  name: 'jumpbox-foundry-ra-${shortSuffix}'
-  params: {
-    accountName: foundry.outputs.accountNameOut
-    principalId: jumpbox.outputs.principalId
-  }
-}
-
-module jumpboxStorageRoleAssignment 'modules/identity/azure-storage-account-role-assignment.bicep' = {
-  name: 'jumpbox-storage-ra-${shortSuffix}'
-  params: {
-    azureStorageName: dependencies.outputs.storageName
-    projectPrincipalId: jumpbox.outputs.principalId
-  }
-}
-
-module jumpboxAiSearchRoleAssignment 'modules/identity/ai-search-role-assignments.bicep' = {
-  name: 'jumpbox-search-ra-${shortSuffix}'
-  params: {
-    aiSearchName: dependencies.outputs.searchName
-    projectPrincipalId: jumpbox.outputs.principalId
-  }
-}
-
-module jumpboxCosmosAccountRoleAssignment 'modules/identity/cosmosdb-account-role-assignment.bicep' = {
-  name: 'jumpbox-cosmos-account-ra-${shortSuffix}'
-  params: {
-    cosmosDBName: dependencies.outputs.cosmosName
-    projectPrincipalId: jumpbox.outputs.principalId
-  }
-}
-
-module jumpboxCosmosSqlRoleAssignment 'modules/identity/cosmosdb-sql-account-role-assignment.bicep' = {
-  name: 'jumpbox-cosmos-sql-ra-${shortSuffix}'
-  params: {
-    cosmosAccountName: dependencies.outputs.cosmosName
-    principalId: jumpbox.outputs.principalId
-  }
-}
-
-module addProjectCapabilityHost 'modules/foundry/add-project-capability-host.bicep' = if (deployCapabilityHost) {
-  name: 'capability-host-${shortSuffix}'
-  params: {
-    accountName: foundry.outputs.accountNameOut
-    projectName: foundry.outputs.projectNameOut
-    projectCapHost: projectCapHost
-    customerSubnetId: network.outputs.agentSubnetId
-    cosmosDBConnection: dependencies.outputs.cosmosName
-    azureStorageConnection: dependencies.outputs.storageName
-    aiSearchConnection: dependencies.outputs.searchName
-    cosmosDBResourceId: dependencies.outputs.cosmosId
-    azureStorageResourceId: dependencies.outputs.storageId
-    aiSearchResourceId: dependencies.outputs.searchId
-  }
-  dependsOn: [
-    storageAccountRoleAssignment
-    cosmosAccountRoleAssignment
-    aiSearchRoleAssignments
-  ]
-}
-
-module storageContainersRoleAssignment 'modules/identity/blob-storage-container-role-assignments.bicep' = if (deployCapabilityHost) {
-  name: 'storage-containers-ra-${shortSuffix}'
-  params: {
-    storageName: dependencies.outputs.storageName
-    aiProjectPrincipalId: foundry.outputs.projectPrincipalId
-  }
-  dependsOn: [
-    addProjectCapabilityHost
-  ]
-}
-
-module cosmosContainerRoleAssignments 'modules/identity/cosmos-container-role-assignments.bicep' = if (deployCapabilityHost) {
-  name: 'cosmos-containers-ra-${shortSuffix}'
-  params: {
-    cosmosAccountName: dependencies.outputs.cosmosName
-    projectWorkspaceId: formatProjectWorkspaceId.outputs.projectWorkspaceIdGuid
-    projectPrincipalId: foundry.outputs.projectPrincipalId
-  }
-  dependsOn: [
-    addProjectCapabilityHost
-    storageContainersRoleAssignment
-  ]
-}
-
-output foundryAccountId string = foundry.outputs.accountId
-output foundryProjectId string = foundry.outputs.projectId
-output foundryProjectPrincipalId string = foundry.outputs.projectPrincipalId
-output bastionId string = bastion.outputs.bastionHostId
-output jumpboxPrivateIp string = jumpbox.outputs.privateIp
-output privateEndpointIds array = privateConnectivity.outputs.privateEndpointIds
-#disable-next-line BCP318
-output capabilityHostName string = deployCapabilityHost ? addProjectCapabilityHost.outputs.projectCapHost : ''
+output resourceGroupId string = rg.id
+output foundryAccountId string = rgDeployment.outputs.foundryAccountId
+output foundryProjectId string = rgDeployment.outputs.foundryProjectId
+output capabilityHostName string = rgDeployment.outputs.capabilityHostName

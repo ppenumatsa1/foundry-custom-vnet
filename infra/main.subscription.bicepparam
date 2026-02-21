@@ -7,7 +7,7 @@ param namePrefix = 'aifndcustomvnet'
 param vnetName = 'aifndcustomvnet-vnet'
 
 // Subnet naming
-param agentSubnetName = 'snet-agent'
+param agentSubnetName = 'snet-agent-host'
 param peSubnetName = 'snet-private-endpoints'
 param managementSubnetName = 'snet-management'
 
@@ -32,7 +32,7 @@ param foundryProjectDescription = 'Private AI Foundry project in custom VNet'
 param projectCapHost = 'caphostproj'
 
 param vnetAddressPrefix = '10.60.0.0/16'
-param agentSubnetPrefix = '10.60.0.0/24'
+param agentSubnetPrefix = '10.60.5.0/24'
 param peSubnetPrefix = '10.60.1.0/24'
 param managementSubnetPrefix = '10.60.2.0/24'
 param bastionSubnetPrefix = '10.60.3.0/26'

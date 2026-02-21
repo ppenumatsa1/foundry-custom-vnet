@@ -13,7 +13,7 @@ param namePrefix string = 'aifndcustomvnet'
 param vnetName string = '${namePrefix}-vnet'
 
 @description('Agent subnet name')
-param agentSubnetName string = 'snet-agent'
+param agentSubnetName string = 'snet-agent-host'
 
 @description('Private endpoint subnet name')
 param peSubnetName string = 'snet-private-endpoints'
@@ -71,7 +71,7 @@ param deployCapabilityHost bool = false
 param vnetAddressPrefix string = '10.60.0.0/16'
 
 @description('Agent subnet CIDR')
-param agentSubnetPrefix string = '10.60.0.0/24'
+param agentSubnetPrefix string = '10.60.5.0/24'
 
 @description('Private endpoint subnet CIDR')
 param peSubnetPrefix string = '10.60.1.0/24'

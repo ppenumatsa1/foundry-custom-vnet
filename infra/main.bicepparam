@@ -11,7 +11,7 @@ param foundryProjectDisplayName = 'Private Project'
 param foundryProjectDescription = 'Private AI Foundry project in custom VNet'
 
 // Subnet naming
-param agentSubnetName = 'snet-agent'
+param agentSubnetName = 'snet-agent-host'
 param peSubnetName = 'snet-private-endpoints'
 param managementSubnetName = 'snet-management'
 
@@ -31,7 +31,7 @@ param existingDnsZones = {
 
 // Network ranges
 param vnetAddressPrefix = '10.50.0.0/16'
-param agentSubnetPrefix = '10.50.0.0/24'
+param agentSubnetPrefix = '10.50.5.0/24'
 param peSubnetPrefix = '10.50.1.0/24'
 param managementSubnetPrefix = '10.50.2.0/24'
 param bastionSubnetPrefix = '10.50.3.0/26'

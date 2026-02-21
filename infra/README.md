@@ -46,9 +46,6 @@ az deployment sub create \
 
 The repo now includes an `azd` provisioning-only entry point:
 
-- `azure.yaml` points to `infra/azd`
-- `infra/azd/main.bicep` wraps `infra/main.subscription.bicep`
-- `infra/azd/main.parameters.json` maps environment values for provisioning
 
 Example:
 
@@ -57,8 +54,9 @@ azd init --template .
 azd env set AZURE_LOCATION <deployment-location>
 azd env set AZURE_RESOURCE_GROUP rg-foundry-custom-vnet
 azd env set JUMPBOX_ADMIN_PASSWORD '<strong-password>'
-# Optional: enable capability host pre-cleanup before provision (default is disabled)
-# azd env set ENABLE_CAPABILITY_HOST_CLEANUP true
+# Optional: disable pre-delete of capability hosts before each provision (default: true)
+# azd env set ENABLE_CAPABILITY_HOST_CLEANUP false
+# Note: preprovision reconciles lingering caphostacct states (waits Deleting/transitional, auto-deletes Failed/Canceled).
 azd provision
 ```
 

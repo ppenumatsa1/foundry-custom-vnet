@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.37.4.10188",
-      "templateHash": "2439871184533735711"
+      "templateHash": "8276461924650957061"
     }
   },
   "parameters": {
@@ -39,7 +39,7 @@
     },
     "agentSubnetName": {
       "type": "string",
-      "defaultValue": "snet-agent",
+      "defaultValue": "snet-agent-host",
       "metadata": {
         "description": "Agent subnet name"
       }
@@ -192,7 +192,7 @@
     },
     "agentSubnetPrefix": {
       "type": "string",
-      "defaultValue": "10.50.0.0/24",
+      "defaultValue": "10.50.5.0/24",
       "metadata": {
         "description": "Agent subnet CIDR"
       }
@@ -342,7 +342,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.37.4.10188",
-              "templateHash": "2812208913199386813"
+              "templateHash": "16352157184752063747"
             }
           },
           "parameters": {
@@ -369,7 +369,7 @@
             },
             "agentSubnetName": {
               "type": "string",
-              "defaultValue": "snet-agent",
+              "defaultValue": "snet-agent-host",
               "metadata": {
                 "description": "Agent subnet name"
               }
@@ -522,7 +522,7 @@
             },
             "agentSubnetPrefix": {
               "type": "string",
-              "defaultValue": "10.50.0.0/24",
+              "defaultValue": "10.50.5.0/24",
               "metadata": {
                 "description": "Agent subnet CIDR"
               }
@@ -750,7 +750,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.37.4.10188",
-                      "templateHash": "15353079719353782576"
+                      "templateHash": "16716669180385132259"
                     }
                   },
                   "parameters": {
@@ -775,14 +775,14 @@
                     },
                     "agentSubnetName": {
                       "type": "string",
-                      "defaultValue": "snet-agent",
+                      "defaultValue": "snet-agent-host",
                       "metadata": {
                         "description": "Agent subnet name (delegated to Microsoft.App/environments)"
                       }
                     },
                     "agentSubnetPrefix": {
                       "type": "string",
-                      "defaultValue": "10.50.0.0/24",
+                      "defaultValue": "10.50.5.0/24",
                       "metadata": {
                         "description": "Agent subnet CIDR"
                       }
@@ -1130,9 +1130,6 @@
                   },
                   "projectDescription": {
                     "value": "[parameters('foundryProjectDescription')]"
-                  },
-                  "agentSubnetId": {
-                    "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.agentSubnetId.value]"
                   }
                 },
                 "template": {
@@ -1142,7 +1139,7 @@
                     "_generator": {
                       "name": "bicep",
                       "version": "0.37.4.10188",
-                      "templateHash": "1965092130031945831"
+                      "templateHash": "4722579376415914877"
                     }
                   },
                   "parameters": {
@@ -1175,12 +1172,6 @@
                       "metadata": {
                         "description": "Project description"
                       }
-                    },
-                    "agentSubnetId": {
-                      "type": "string",
-                      "metadata": {
-                        "description": "Agent subnet ARM resource ID used for Foundry Agent network injection"
-                      }
                     }
                   },
                   "resources": [
@@ -1204,13 +1195,6 @@
                           "bypass": "AzureServices",
                           "ipRules": []
                         },
-                        "networkInjections": [
-                          {
-                            "scenario": "agent",
-                            "subnetArmId": "[parameters('agentSubnetId')]",
-                            "useMicrosoftManagedNetwork": false
-                          }
-                        ],
                         "allowProjectManagement": true
                       }
                     },
@@ -1262,10 +1246,7 @@
                     }
                   }
                 }
-              },
-              "dependsOn": [
-                "[resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix')))]"
-              ]
+              }
             },
             {
               "type": "Microsoft.Resources/deployments",

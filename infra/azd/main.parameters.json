@@ -15,7 +15,7 @@
       "value": "aifndcustomvnet-vnet"
     },
     "agentSubnetName": {
-      "value": "snet-agent"
+      "value": "snet-agent-host"
     },
     "peSubnetName": {
       "value": "snet-private-endpoints"
@@ -64,7 +64,7 @@
       "value": "10.60.0.0/16"
     },
     "agentSubnetPrefix": {
-      "value": "10.60.0.0/24"
+      "value": "10.60.5.0/24"
     },
     "peSubnetPrefix": {
       "value": "10.60.1.0/24"

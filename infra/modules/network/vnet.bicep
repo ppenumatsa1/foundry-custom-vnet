@@ -8,10 +8,10 @@ param vnetName string
 param vnetAddressPrefix string = '10.50.0.0/16'
 
 @description('Agent subnet name (delegated to Microsoft.App/environments)')
-param agentSubnetName string = 'snet-agent'
+param agentSubnetName string = 'snet-agent-host'
 
 @description('Agent subnet CIDR')
-param agentSubnetPrefix string = '10.50.0.0/24'
+param agentSubnetPrefix string = '10.50.5.0/24'
 
 @description('Private endpoint subnet name')
 param peSubnetName string = 'snet-private-endpoints'

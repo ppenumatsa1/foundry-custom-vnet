@@ -1,92 +1,97 @@
-# Architecture Flows
+# Architecture Flow (Current)
 
-This file captures two Mermaid diagrams for the current IaC/runtime mental model.
-
-## 1) Bicep Deployment Dependency Flow
+This is the current end-to-end Bicep deployment flow after the entrypoint changes.
 
 ```mermaid
 flowchart TD
-  A[azd provision] --> B[infra/azd/main.bicep]
-  B --> C[infra/main.subscription.bicep]
-  C --> D[infra/main.bicep (resourceGroup scope)]
+  A[azd provision] --> H[preprovision hook\ninfra/scripts/preprovision-capability-hosts.sh]
+  H --> B[infra/main.bicep\nsubscription scope]
+  B --> C[Resource Group creation\nMicrosoft.Resources/resourceGroups]
+  B --> D[module: main.rg.bicep\nresourceGroup scope]
 
   D --> V[validate-existing-resources]
-  D --> N[network-agent-vnet]
-  D --> DEP[dependencies]
-  D --> FND[foundry account-project]
+  D --> N[network/vnet\ncreates snet-agent-host, snet-private-endpoints, snet-management, Bastion, Firewall subnets]
+  D --> DEP[data/dependencies\nStorage + Search + Cosmos]
+  D --> FND[foundry/account-project]
 
   V --> DEP
-  N --> PE[private-endpoints-dns]
-  DEP --> PE
+  N --> FW[network/firewall-egress\noptional: enableFirewall]
+  FW --> RM[network/routing\nmanagement subnet UDR]
+  FW --> RA[network/routing\nagent subnet UDR + delegation preserve]
+  N --> BAS[network/bastion]
+  N --> JUMP[network/jumpbox-vm]
+
+  DEP --> PE[network/private-endpoints-dns]
   FND --> PE
+  N --> PE
 
-  N --> BAS[bastion]
-  N --> FW[firewall-egress]
-  N --> JUMP[jumpbox-vm]
+  FND --> WID[foundry/format-project-workspace-id]
+  PE --> SA[identity/storage role assignment]
+  PE --> CA[identity/cosmos role assignment]
+  PE --> SR[identity/search role assignments]
 
-  FW --> R1[routing: management subnet]
-  FW --> R2[routing: agent subnet]
-  JUMP --> R1
-  JUMP --> R2
+  D --> M41[foundry/model-deployment gpt-4.1\noptional: deployModel]
+  M41 --> M5[foundry/model-deployment gpt-5]
+  M5 --> ME[foundry/model-deployment text-embed-3-large]
 
-  D --> WID[format-project-workspace-id]
-  FND --> WID
-
-  D --> SA[storage role assignment]
-  D --> CA[cosmos account role assignment]
-  D --> SRCH[search role assignments]
-  PE --> SA
-  PE --> CA
-  PE --> SRCH
-
-  D --> M41[gpt-4.1 deployment]
-  M41 --> M5[gpt-5 deployment]
-  M5 --> ME[text-embed-3-large deployment]
-
-  D --> CH[capability host (optional)]
-  WID --> CH
-  CH --> PRA[post role assignments (optional)]
-
-  classDef conditional fill:#fff4e5,stroke:#f59e0b,color:#92400e;
-  class CH,PRA conditional;
+  WID --> CH[foundry/add-project-capability-host\noptional: deployCapabilityHost]
+  CH --> PRA[identity/post-capability-host role assignments\noptional]
 ```
 
-## 2) Runtime Traffic Flow (Agent/VM + Firewall + Private Endpoints)
+## Key change summary
 
-```mermaid
-flowchart LR
-  U[User / Jumpbox Session] --> VM[Jumpbox VM in snet-management]
-  VM --> FWRT[UDR: 0.0.0.0/0 -> Azure Firewall Private IP]
-  FWRT --> AFW[Azure Firewall]
-  AFW --> PIP[Firewall Public IP (SNAT)]
-  PIP --> NET[Internet]
+- `azd` now starts at `infra/main.bicep` (subscription scope).
+- `main.bicep` calls `main.rg.bicep` for all resource-group resources.
+- Agent subnet in the flow is `snet-agent-host`.
 
-  AG[Workload in snet-agent] --> AGRT[UDR: 0.0.0.0/0 -> Azure Firewall Private IP]
-  AGRT --> AFW
+## ASCII Flow (Current)
 
-  VM --> DNS[Azure DNS 168.63.129.16]
-  AG --> DNS
+```text
++------------------+
+|   azd provision  |
++------------------+
+          |
+          v
++-----------------------------------------------+
+| preprovision hook                             |
+| (capability host cleanup / state reconciliation)
++-----------------------------------------------+
+          |
+          v
++-----------------------------------------------+
+| main.bicep (subscription scope)               |
+| - creates target Resource Group               |
+| - invokes main.rg.bicep at RG scope           |
++-----------------------------------------------+
+          |
+          v
++-----------------------------------------------+
+| main.rg.bicep (resourceGroup scope)           |
++-----------------------------------------------+
+   |            |              |              |
+   v            v              v              v
+[validate]   [network/vnet] [dependencies] [foundry account+project]
+                 |               |               |
+                 |               +-------+       |
+                 +--------+--------------+-------+
+                          v
+               [private endpoints + private DNS]
 
-  VM --> FQDN1[aifndcustomvnetacct.cognitiveservices.azure.com]
-  VM --> FQDN2[aifndcustomvnetacct.openai.azure.com]
-  AG --> FQDN1
-  AG --> FQDN2
+network/vnet also fans out to:
+  -> [bastion]
+  -> [jumpbox-vm]
+  -> [firewall-egress] (if enableFirewall=true)
+         -> [routing mgmt subnet UDR]
+         -> [routing agent-host subnet UDR + delegation]
 
-  FQDN1 --> PDNS1[Private DNS Zone: privatelink.cognitiveservices.azure.com]
-  FQDN2 --> PDNS2[Private DNS Zone: privatelink.openai.azure.com]
+foundry account+project
+  -> [format workspace id]
+  -> [model deploy gpt-4.1] -> [gpt-5] -> [text-embed]   (if deployModel=true)
+  -> [capability host]                                      (if deployCapabilityHost=true)
+       -> [post-capability-host role assignments]           (optional)
 
-  PDNS1 --> PE1[Private Endpoint IPs in snet-private-endpoints]
-  PDNS2 --> PE1
-  PE1 --> SVC[Foundry/OpenAI/Search/Storage/Cosmos services via Private Link]
-
-  classDef private fill:#e8f5e9,stroke:#2e7d32,color:#1b5e20;
-  classDef egress fill:#e3f2fd,stroke:#1565c0,color:#0d47a1;
-  class PDNS1,PDNS2,PE1,SVC private;
-  class FWRT,AGRT,AFW,PIP,NET egress;
+private endpoints + DNS
+  -> [storage role assignment]
+  -> [cosmos role assignment]
+  -> [search role assignments]
 ```
-
-## Notes
-
-- Private service FQDNs resolve to private endpoint IPs through Private DNS zones.
-- Internet-bound traffic from `snet-management` and `snet-agent` is intended to egress through Azure Firewall and SNAT out via firewall public IP.
-- This keeps private-service traffic on Azure backbone while still enabling controlled outbound internet for web/search calls.
