@@ -10,14 +10,14 @@ flowchart TD
   B --> D[module: main.rg.bicep\nresourceGroup scope]
 
   D --> V[validate-existing-resources]
-  D --> N[network/vnet\ncreates snet-agent-host, snet-private-endpoints, snet-management, Bastion, Firewall subnets]
+  D --> N[network mode\nbootstrap=create VNet/subnets\nreuse=existing refs]
   D --> DEP[data/dependencies\nStorage + Search + Cosmos]
   D --> FND[foundry/account-project]
 
   V --> DEP
   N --> FW[network/firewall-egress\noptional: enableFirewall]
-  FW --> RM[network/routing\nmanagement subnet UDR]
-  FW --> RA[network/routing\nagent subnet UDR + delegation preserve]
+  FW --> RM[network/routing\noptional: configureSubnetRouting]
+  FW --> RA[network/routing\noptional: configureSubnetRouting]
   N --> BAS[network/bastion]
   N --> JUMP[network/jumpbox-vm]
 
@@ -31,7 +31,7 @@ flowchart TD
   PE --> SR[identity/search role assignments]
 
   D --> M41[foundry/model-deployment gpt-4.1\noptional: deployModel]
-  M41 --> M5[foundry/model-deployment gpt-5]
+  M41 --> M5[foundry/model-deployment gpt-5.2]
   M5 --> ME[foundry/model-deployment text-embed-3-large]
 
   WID --> CH[foundry/add-project-capability-host\noptional: deployCapabilityHost]
@@ -68,25 +68,26 @@ flowchart TD
 +-----------------------------------------------+
 | main.rg.bicep (resourceGroup scope)           |
 +-----------------------------------------------+
-   |            |              |              |
-   v            v              v              v
-[validate]   [network/vnet] [dependencies] [foundry account+project]
-                 |               |               |
-                 |               +-------+       |
-                 +--------+--------------+-------+
-                          v
-               [private endpoints + private DNS]
+  |                 |              |                    |
+  v                 v              v                    v
+[validate] [existing network refs] [dependencies] [foundry account+project]
+    |                 |              |                    |
+    |                 +--------------+--------------------+
+    |                                v
+    +----------------------> [private endpoints + private DNS]
 
-network/vnet also fans out to:
+network mode fan out:
+  -> [bootstrap: create vnet/subnets]
+  -> [reuse: existing vnet/subnet refs]
   -> [bastion]
   -> [jumpbox-vm]
   -> [firewall-egress] (if enableFirewall=true)
-         -> [routing mgmt subnet UDR]
-         -> [routing agent-host subnet UDR + delegation]
+         -> [routing mgmt subnet UDR] (if configureSubnetRouting=true)
+         -> [routing agent-host subnet UDR + delegation] (if configureSubnetRouting=true)
 
 foundry account+project
   -> [format workspace id]
-  -> [model deploy gpt-4.1] -> [gpt-5] -> [text-embed]   (if deployModel=true)
+  -> [model deploy gpt-4.1] -> [gpt-5.2] -> [text-embed]   (if deployModel=true)
   -> [capability host]                                      (if deployCapabilityHost=true)
        -> [post-capability-host role assignments]           (optional)
 

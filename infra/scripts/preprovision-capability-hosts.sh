@@ -3,7 +3,7 @@ set -euo pipefail
 
 RESOURCE_GROUP="${AZURE_RESOURCE_GROUP:-}"
 SUBSCRIPTION_ID="${AZURE_SUBSCRIPTION_ID:-}"
-ENABLE_CAPABILITY_HOST_CLEANUP="${ENABLE_CAPABILITY_HOST_CLEANUP:-true}"
+ENABLE_CAPABILITY_HOST_CLEANUP="${ENABLE_CAPABILITY_HOST_CLEANUP:-false}"
 ACCOUNT_CAP_HOST_NAME="${ACCOUNT_CAP_HOST_NAME:-caphostacct}"
 PROJECT_CAP_HOST_NAME="${PROJECT_CAP_HOST_NAME:-caphostproj}"
 PROJECT_NAME="${FOUNDRY_PROJECT_NAME:-private-project}"
@@ -114,9 +114,16 @@ if [[ "${ENABLE_CAPABILITY_HOST_CLEANUP,,}" == "true" ]]; then
   az rest --method DELETE --url "$PROJECT_CAP_HOST_URL" >/dev/null 2>&1 || true
   az rest --method DELETE --url "$ACCOUNT_CAP_HOST_URL" >/dev/null 2>&1 || true
   echo "Capability host cleanup completed (project/account)."
+  wait_for_account_cap_host_unlock
+  reconcile_account_cap_host_state
 else
-  echo "Skipping capability host cleanup: ENABLE_CAPABILITY_HOST_CLEANUP is not true."
+  state="$(az rest --method GET --url "$ACCOUNT_CAP_HOST_URL" --query "properties.provisioningState" -o tsv 2>/dev/null || true)"
+  if [[ -z "$state" ]]; then
+    echo "Skipping capability host cleanup: account capability host not found."
+  else
+    echo "Skipping capability host cleanup: ENABLE_CAPABILITY_HOST_CLEANUP is not true (current account caphost state: ${state})."
+    if [[ "$state" == "Deleting" ]]; then
+      echo "Note: state is Deleting. Sample-aligned mode does not block provision; if deployment fails, wait and retry or run cleanup explicitly."
+    fi
+  fi
 fi
-
-wait_for_account_cap_host_unlock
-reconcile_account_cap_host_state

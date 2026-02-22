@@ -1,5 +1,6 @@
 {
   "chat.tools.terminal.autoApprove": {
-    "azd": true
+    "azd": true,
+    "bicep": true
   }
 }

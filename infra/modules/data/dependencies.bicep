@@ -55,7 +55,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = if (!storageEx
     publicNetworkAccess: 'Disabled'
     allowSharedKeyAccess: false
     networkAcls: {
-      bypass: 'None'
+      bypass: 'AzureServices'
       defaultAction: 'Deny'
     }
   }

@@ -29,16 +29,18 @@ param existingDnsZones = {
 	'privatelink.documents.azure.com': ''
 }
 
-// Network ranges
+param enableFirewall = true
+param deployModel = false
+param networkMode = 'reuse'
+param configureSubnetRouting = false
+
+// Used only when networkMode = 'bootstrap'
 param vnetAddressPrefix = '10.50.0.0/16'
 param agentSubnetPrefix = '10.50.5.0/24'
 param peSubnetPrefix = '10.50.1.0/24'
 param managementSubnetPrefix = '10.50.2.0/24'
 param bastionSubnetPrefix = '10.50.3.0/26'
 param firewallSubnetPrefix = '10.50.4.0/26'
-
-param enableFirewall = true
-param deployModel = false
 
 param jumpboxAdminUsername = 'azureuser'
 param jumpboxAdminPassword = '<replace-with-secure-value>'

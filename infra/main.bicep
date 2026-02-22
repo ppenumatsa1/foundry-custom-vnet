@@ -76,22 +76,32 @@ param deployModel bool = false
 @description('Deploy project capability host and post-capability-host role assignments')
 param deployCapabilityHost bool = false
 
-@description('VNet CIDR')
+@allowed([
+  'bootstrap'
+  'reuse'
+])
+@description('Network mode: bootstrap creates VNet/subnets; reuse uses existing VNet/subnets')
+param networkMode string = 'reuse'
+
+@description('Apply route-table updates to subnets (disabled by default to avoid in-use subnet mutation)')
+param configureSubnetRouting bool = false
+
+@description('VNet CIDR (used when networkMode=bootstrap)')
 param vnetAddressPrefix string = '10.50.0.0/16'
 
-@description('Agent subnet CIDR')
+@description('Agent subnet CIDR (used when networkMode=bootstrap)')
 param agentSubnetPrefix string = '10.50.5.0/24'
 
-@description('Private endpoint subnet CIDR')
+@description('Private endpoint subnet CIDR (used when networkMode=bootstrap)')
 param peSubnetPrefix string = '10.50.1.0/24'
 
-@description('Management subnet CIDR')
+@description('Management subnet CIDR (used when networkMode=bootstrap)')
 param managementSubnetPrefix string = '10.50.2.0/24'
 
-@description('Bastion subnet CIDR')
+@description('Bastion subnet CIDR (used when networkMode=bootstrap)')
 param bastionSubnetPrefix string = '10.50.3.0/26'
 
-@description('Firewall subnet CIDR')
+@description('Firewall subnet CIDR (used when networkMode=bootstrap)')
 param firewallSubnetPrefix string = '10.50.4.0/26'
 
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
@@ -127,6 +137,8 @@ module rgDeployment 'main.rg.bicep' = {
     enableFirewall: enableFirewall
     deployModel: deployModel
     deployCapabilityHost: deployCapabilityHost
+    networkMode: networkMode
+    configureSubnetRouting: configureSubnetRouting
     vnetAddressPrefix: vnetAddressPrefix
     agentSubnetPrefix: agentSubnetPrefix
     peSubnetPrefix: peSubnetPrefix

@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.37.4.10188",
-      "templateHash": "16352157184752063747"
+      "templateHash": "12058486817379692157"
     }
   },
   "parameters": {
@@ -176,50 +176,69 @@
         "description": "Deploy project capability host and post-capability-host role assignments"
       }
     },
+    "networkMode": {
+      "type": "string",
+      "defaultValue": "reuse",
+      "allowedValues": [
+        "bootstrap",
+        "reuse"
+      ],
+      "metadata": {
+        "description": "Network mode: bootstrap creates VNet/subnets; reuse uses existing VNet/subnets"
+      }
+    },
+    "configureSubnetRouting": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Apply route-table updates to subnets (disabled by default to avoid in-use subnet mutation)"
+      }
+    },
     "vnetAddressPrefix": {
       "type": "string",
       "defaultValue": "10.50.0.0/16",
       "metadata": {
-        "description": "VNet CIDR"
+        "description": "VNet CIDR (used only when networkMode=bootstrap)"
       }
     },
     "agentSubnetPrefix": {
       "type": "string",
       "defaultValue": "10.50.5.0/24",
       "metadata": {
-        "description": "Agent subnet CIDR"
+        "description": "Agent subnet CIDR (used only when networkMode=bootstrap)"
       }
     },
     "peSubnetPrefix": {
       "type": "string",
       "defaultValue": "10.50.1.0/24",
       "metadata": {
-        "description": "Private endpoint subnet CIDR"
+        "description": "Private endpoint subnet CIDR (used only when networkMode=bootstrap)"
       }
     },
     "managementSubnetPrefix": {
       "type": "string",
       "defaultValue": "10.50.2.0/24",
       "metadata": {
-        "description": "Management subnet CIDR"
+        "description": "Management subnet CIDR (used only when networkMode=bootstrap)"
       }
     },
     "bastionSubnetPrefix": {
       "type": "string",
       "defaultValue": "10.50.3.0/26",
       "metadata": {
-        "description": "Bastion subnet CIDR"
+        "description": "Bastion subnet CIDR (used only when networkMode=bootstrap)"
       }
     },
     "firewallSubnetPrefix": {
       "type": "string",
       "defaultValue": "10.50.4.0/26",
       "metadata": {
-        "description": "Firewall subnet CIDR"
+        "description": "Firewall subnet CIDR (used only when networkMode=bootstrap)"
       }
     }
   },
   "variables": {
+    "isBootstrap": "[equals(parameters('networkMode'), 'bootstrap')]",
     "shortSuffix": "[take(uniqueString(resourceGroup().id), 6)]",
     "gpt41Deployment": {
       "name": "gpt-4.1",
@@ -230,9 +249,9 @@
       "capacity": 100
     },
     "gpt5Deployment": {
-      "name": "gpt-5",
-      "modelName": "gpt-5",
-      "modelVersion": "2025-08-07",
+      "name": "gpt-5.2",
+      "modelName": "gpt-5.2",
+      "modelVersion": "",
       "modelPublisherFormat": "OpenAI",
       "skuName": "GlobalStandard",
       "capacity": 100
@@ -248,121 +267,7 @@
   },
   "resources": [
     {
-      "type": "Microsoft.Resources/deployments",
-      "apiVersion": "2022-09-01",
-      "name": "[format('validate-existing-{0}', variables('shortSuffix'))]",
-      "properties": {
-        "expressionEvaluationOptions": {
-          "scope": "inner"
-        },
-        "mode": "Incremental",
-        "parameters": {
-          "aiSearchResourceId": {
-            "value": "[parameters('aiSearchResourceId')]"
-          },
-          "azureStorageAccountResourceId": {
-            "value": "[parameters('azureStorageAccountResourceId')]"
-          },
-          "azureCosmosDBAccountResourceId": {
-            "value": "[parameters('azureCosmosDBAccountResourceId')]"
-          }
-        },
-        "template": {
-          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-          "contentVersion": "1.0.0.0",
-          "metadata": {
-            "_generator": {
-              "name": "bicep",
-              "version": "0.37.4.10188",
-              "templateHash": "2122988384152047062"
-            }
-          },
-          "parameters": {
-            "aiSearchResourceId": {
-              "type": "string",
-              "defaultValue": "",
-              "metadata": {
-                "description": "Existing AI Search resource ID"
-              }
-            },
-            "azureStorageAccountResourceId": {
-              "type": "string",
-              "defaultValue": "",
-              "metadata": {
-                "description": "Existing Storage resource ID"
-              }
-            },
-            "azureCosmosDBAccountResourceId": {
-              "type": "string",
-              "defaultValue": "",
-              "metadata": {
-                "description": "Existing Cosmos DB resource ID"
-              }
-            }
-          },
-          "variables": {
-            "aiSearchExists": "[not(equals(parameters('aiSearchResourceId'), ''))]",
-            "storageExists": "[not(equals(parameters('azureStorageAccountResourceId'), ''))]",
-            "cosmosExists": "[not(equals(parameters('azureCosmosDBAccountResourceId'), ''))]",
-            "searchParts": "[split(parameters('aiSearchResourceId'), '/')]",
-            "storageParts": "[split(parameters('azureStorageAccountResourceId'), '/')]",
-            "cosmosParts": "[split(parameters('azureCosmosDBAccountResourceId'), '/')]"
-          },
-          "resources": [],
-          "outputs": {
-            "aiSearchExists": {
-              "type": "bool",
-              "value": "[variables('aiSearchExists')]"
-            },
-            "azureStorageExists": {
-              "type": "bool",
-              "value": "[variables('storageExists')]"
-            },
-            "cosmosDBExists": {
-              "type": "bool",
-              "value": "[variables('cosmosExists')]"
-            },
-            "aiSearchName": {
-              "type": "string",
-              "value": "[if(variables('aiSearchExists'), variables('searchParts')[8], '')]"
-            },
-            "aiSearchSubscriptionId": {
-              "type": "string",
-              "value": "[if(variables('aiSearchExists'), variables('searchParts')[2], subscription().subscriptionId)]"
-            },
-            "aiSearchResourceGroupName": {
-              "type": "string",
-              "value": "[if(variables('aiSearchExists'), variables('searchParts')[4], resourceGroup().name)]"
-            },
-            "azureStorageName": {
-              "type": "string",
-              "value": "[if(variables('storageExists'), variables('storageParts')[8], '')]"
-            },
-            "azureStorageSubscriptionId": {
-              "type": "string",
-              "value": "[if(variables('storageExists'), variables('storageParts')[2], subscription().subscriptionId)]"
-            },
-            "azureStorageResourceGroupName": {
-              "type": "string",
-              "value": "[if(variables('storageExists'), variables('storageParts')[4], resourceGroup().name)]"
-            },
-            "cosmosDBName": {
-              "type": "string",
-              "value": "[if(variables('cosmosExists'), variables('cosmosParts')[8], '')]"
-            },
-            "cosmosDBSubscriptionId": {
-              "type": "string",
-              "value": "[if(variables('cosmosExists'), variables('cosmosParts')[2], subscription().subscriptionId)]"
-            },
-            "cosmosDBResourceGroupName": {
-              "type": "string",
-              "value": "[if(variables('cosmosExists'), variables('cosmosParts')[4], resourceGroup().name)]"
-            }
-          }
-        }
-      }
-    },
-    {
+      "condition": "[variables('isBootstrap')]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
       "name": "[format('network-{0}', variables('shortSuffix'))]",
@@ -577,6 +482,121 @@
             "firewallSubnetId": {
               "type": "string",
               "value": "[format('{0}/subnets/AzureFirewallSubnet', resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName')))]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "[format('validate-existing-{0}', variables('shortSuffix'))]",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "aiSearchResourceId": {
+            "value": "[parameters('aiSearchResourceId')]"
+          },
+          "azureStorageAccountResourceId": {
+            "value": "[parameters('azureStorageAccountResourceId')]"
+          },
+          "azureCosmosDBAccountResourceId": {
+            "value": "[parameters('azureCosmosDBAccountResourceId')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.37.4.10188",
+              "templateHash": "2122988384152047062"
+            }
+          },
+          "parameters": {
+            "aiSearchResourceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Existing AI Search resource ID"
+              }
+            },
+            "azureStorageAccountResourceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Existing Storage resource ID"
+              }
+            },
+            "azureCosmosDBAccountResourceId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Existing Cosmos DB resource ID"
+              }
+            }
+          },
+          "variables": {
+            "aiSearchExists": "[not(equals(parameters('aiSearchResourceId'), ''))]",
+            "storageExists": "[not(equals(parameters('azureStorageAccountResourceId'), ''))]",
+            "cosmosExists": "[not(equals(parameters('azureCosmosDBAccountResourceId'), ''))]",
+            "searchParts": "[split(parameters('aiSearchResourceId'), '/')]",
+            "storageParts": "[split(parameters('azureStorageAccountResourceId'), '/')]",
+            "cosmosParts": "[split(parameters('azureCosmosDBAccountResourceId'), '/')]"
+          },
+          "resources": [],
+          "outputs": {
+            "aiSearchExists": {
+              "type": "bool",
+              "value": "[variables('aiSearchExists')]"
+            },
+            "azureStorageExists": {
+              "type": "bool",
+              "value": "[variables('storageExists')]"
+            },
+            "cosmosDBExists": {
+              "type": "bool",
+              "value": "[variables('cosmosExists')]"
+            },
+            "aiSearchName": {
+              "type": "string",
+              "value": "[if(variables('aiSearchExists'), variables('searchParts')[8], '')]"
+            },
+            "aiSearchSubscriptionId": {
+              "type": "string",
+              "value": "[if(variables('aiSearchExists'), variables('searchParts')[2], subscription().subscriptionId)]"
+            },
+            "aiSearchResourceGroupName": {
+              "type": "string",
+              "value": "[if(variables('aiSearchExists'), variables('searchParts')[4], resourceGroup().name)]"
+            },
+            "azureStorageName": {
+              "type": "string",
+              "value": "[if(variables('storageExists'), variables('storageParts')[8], '')]"
+            },
+            "azureStorageSubscriptionId": {
+              "type": "string",
+              "value": "[if(variables('storageExists'), variables('storageParts')[2], subscription().subscriptionId)]"
+            },
+            "azureStorageResourceGroupName": {
+              "type": "string",
+              "value": "[if(variables('storageExists'), variables('storageParts')[4], resourceGroup().name)]"
+            },
+            "cosmosDBName": {
+              "type": "string",
+              "value": "[if(variables('cosmosExists'), variables('cosmosParts')[8], '')]"
+            },
+            "cosmosDBSubscriptionId": {
+              "type": "string",
+              "value": "[if(variables('cosmosExists'), variables('cosmosParts')[2], subscription().subscriptionId)]"
+            },
+            "cosmosDBResourceGroupName": {
+              "type": "string",
+              "value": "[if(variables('cosmosExists'), variables('cosmosParts')[4], resourceGroup().name)]"
             }
           }
         }
@@ -924,12 +944,8 @@
           "location": {
             "value": "[parameters('location')]"
           },
-          "vnetId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.vnetId.value]"
-          },
-          "peSubnetId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.peSubnetId.value]"
-          },
+          "vnetId": "[if(variables('isBootstrap'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.vnetId.value), createObject('value', resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))))]",
+          "peSubnetId": "[if(variables('isBootstrap'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.peSubnetId.value), createObject('value', resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('peSubnetName'))))]",
           "aiFoundryAccountId": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', format('foundry-{0}', variables('shortSuffix'))), '2022-09-01').outputs.accountId.value]"
           },
@@ -1860,9 +1876,7 @@
           "bastionPublicIpName": {
             "value": "[format('{0}-bas-pip-{1}', parameters('namePrefix'), variables('shortSuffix'))]"
           },
-          "bastionSubnetId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.bastionSubnetId.value]"
-          }
+          "bastionSubnetId": "[if(variables('isBootstrap'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.bastionSubnetId.value), createObject('value', resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), 'AzureBastionSubnet')))]"
         },
         "template": {
           "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -1975,16 +1989,14 @@
           "firewallPublicIpName": {
             "value": "[format('{0}-afw-pip-{1}', parameters('namePrefix'), variables('shortSuffix'))]"
           },
-          "firewallSubnetId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.firewallSubnetId.value]"
-          },
+          "firewallSubnetId": "[if(variables('isBootstrap'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.firewallSubnetId.value), createObject('value', resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), 'AzureFirewallSubnet')))]",
           "enableEgressRules": {
             "value": true
           },
           "sourceSubnetPrefixes": {
             "value": [
-              "[parameters('managementSubnetPrefix')]",
-              "[parameters('agentSubnetPrefix')]"
+              "[reference(resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('managementSubnetName')), '2024-05-01').addressPrefix]",
+              "[reference(resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('agentSubnetName')), '2024-05-01').addressPrefix]"
             ]
           }
         },
@@ -2100,7 +2112,7 @@
       ]
     },
     {
-      "condition": "[parameters('enableFirewall')]",
+      "condition": "[and(parameters('enableFirewall'), parameters('configureSubnetRouting'))]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
       "name": "[format('routing-{0}', variables('shortSuffix'))]",
@@ -2116,14 +2128,12 @@
           "routeTableName": {
             "value": "[format('{0}-rt-management-{1}', parameters('namePrefix'), variables('shortSuffix'))]"
           },
-          "vnetName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.vnetNameOut.value]"
-          },
+          "vnetName": "[if(variables('isBootstrap'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.vnetNameOut.value), createObject('value', parameters('vnetName')))]",
           "subnetName": {
             "value": "[parameters('managementSubnetName')]"
           },
           "subnetPrefix": {
-            "value": "[parameters('managementSubnetPrefix')]"
+            "value": "[reference(resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('managementSubnetName')), '2024-05-01').addressPrefix]"
           },
           "firewallPrivateIp": "[if(parameters('enableFirewall'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('firewall-{0}', variables('shortSuffix'))), '2022-09-01').outputs.firewallPrivateIp.value), createObject('value', ''))]"
         },
@@ -2235,7 +2245,7 @@
       ]
     },
     {
-      "condition": "[parameters('enableFirewall')]",
+      "condition": "[and(parameters('enableFirewall'), parameters('configureSubnetRouting'))]",
       "type": "Microsoft.Resources/deployments",
       "apiVersion": "2022-09-01",
       "name": "[format('routing-agent-{0}', variables('shortSuffix'))]",
@@ -2251,14 +2261,12 @@
           "routeTableName": {
             "value": "[format('{0}-rt-agent-{1}', parameters('namePrefix'), variables('shortSuffix'))]"
           },
-          "vnetName": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.vnetNameOut.value]"
-          },
+          "vnetName": "[if(variables('isBootstrap'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.vnetNameOut.value), createObject('value', parameters('vnetName')))]",
           "subnetName": {
             "value": "[parameters('agentSubnetName')]"
           },
           "subnetPrefix": {
-            "value": "[parameters('agentSubnetPrefix')]"
+            "value": "[reference(resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('agentSubnetName')), '2024-05-01').addressPrefix]"
           },
           "subnetDelegations": {
             "value": [
@@ -2399,9 +2407,7 @@
           "nicName": {
             "value": "[format('{0}-jump-nic-{1}', parameters('namePrefix'), variables('shortSuffix'))]"
           },
-          "subnetId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.managementSubnetId.value]"
-          },
+          "subnetId": "[if(variables('isBootstrap'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.managementSubnetId.value), createObject('value', resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('managementSubnetName'))))]",
           "adminUsername": {
             "value": "[parameters('jumpboxAdminUsername')]"
           },
@@ -3509,9 +3515,7 @@
           "projectCapHost": {
             "value": "[parameters('projectCapHost')]"
           },
-          "customerSubnetId": {
-            "value": "[reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.agentSubnetId.value]"
-          },
+          "customerSubnetId": "[if(variables('isBootstrap'), createObject('value', reference(resourceId('Microsoft.Resources/deployments', format('network-{0}', variables('shortSuffix'))), '2022-09-01').outputs.agentSubnetId.value), createObject('value', resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('agentSubnetName'))))]",
           "cosmosDBConnection": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', format('dependencies-{0}', variables('shortSuffix'))), '2022-09-01').outputs.cosmosName.value]"
           },

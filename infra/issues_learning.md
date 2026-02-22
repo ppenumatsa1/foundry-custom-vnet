@@ -174,3 +174,63 @@ This file captures key issues encountered during implementation and provisioning
 3. If controlled egress routing is required in Phase 1, move subnet route-table association to a separate post-network deployment step.
 4. Keep API versions periodically reviewed against provider-supported versions in target subscription/region.
 5. Add a small diagnostics runbook for Foundry portal blade failures (required logs, request IDs, network ACL checks, and bypass setting verification).
+
+## 14) Steady-state idempotency for in-use subnets
+
+- **Symptom**: repeat `azd provision` failed with subnet update errors like:
+  - `InUseSubnetCannotBeUpdated`
+  - `InUsePrefixCannotBeDeleted`
+- **Root cause**: ARM/Bicep is declarative, but subnet property updates are still constrained by provider/runtime state when subnets have active allocations/delegations.
+- **Decision**: switch to a steady-state pattern where VNet/subnets are treated as existing resources and are not mutated during normal reprovision.
+- **Implementation**:
+  - `main.rg.bicep` now references existing VNet/subnets instead of creating/updating subnet shape.
+  - Route-table/subnet association updates are opt-in (`configureSubnetRouting=false` by default).
+  - Model deployment target updated from `gpt-5` to `gpt-5.2`.
+- **Validation**:
+  - `azd provision` succeeded.
+  - Immediate second `azd provision` returned no-op (`Didn't find new changes`).
+- **Learning**: for long-lived private-network environments, use a two-mode approach:
+  - bootstrap mode (network creation/mutation), and
+  - steady-state mode (no subnet mutation) for reliable repeat deployments.
+
+## 15) Explicit bootstrap/reuse network mode
+
+- **Goal**: support both first-time full deployment (new RG/network) and stable repeat runs.
+- **Change**:
+  - Added `networkMode` with values `bootstrap` and `reuse`.
+  - `bootstrap` creates VNet/subnets via `modules/network/vnet.bicep`.
+  - `reuse` uses existing VNet/subnet references and avoids subnet mutation.
+- **Default**: `reuse` (safer for repeat provisioning).
+- **Operational guidance**:
+  - New environment: set `networkMode=bootstrap`.
+  - Subsequent runs: set `networkMode=reuse`.
+
+## 16) Foundry project MSI storage permission troubleshooting
+
+- **Symptom**: Agent file upload/indexing fails with:
+  - `UserError/Auth/Authorization/ResourceMsiTokenDoesntHavePermissionsOnStorage`
+  - Error text references: `Foundry project MSI <account>/<project> doesn't have appropriate permissions on storage account <name>`.
+- **Observed context**:
+  - `Storage Blob Data Contributor` + Search roles were present in IaC intent.
+  - Manual CLI role sync was applied to project MI for storage/search roles and validated by role listing.
+  - Indexing still returned the same 403 in current environment.
+- **Role set used for manual sync**:
+  - Storage: `Storage Blob Data Contributor`, `Storage Blob Data Owner`, `Storage Account Contributor`
+  - Search: `Search Service Contributor`, `Search Index Data Contributor`
+- **Learning**:
+  - A visible RBAC assignment on ARM scope may still not satisfy immediate service-side assetstore authorization checks.
+  - Keep a dedicated verification runbook: assign roles, wait for propagation, re-run indexing, and capture correlation/request IDs for escalation.
+
+## 17) Storage trusted-services bypass and reprovision did not clear assetstore 403
+
+- **Symptom**: After successful `azd provision`, agent indexing still failed with the same assetstore authorization error:
+  - `UserError/Auth/Authorization/ResourceMsiTokenDoesntHavePermissionsOnStorage`
+  - Correlation sample: operation `ed445daf323735fcc3355b46f2eaa141`, request `b9ae90fa5097df7e`.
+- **Validation performed**:
+  - Confirmed Foundry project MI principal and role assignments at storage scope.
+  - Confirmed Foundry account MI role assignments at storage scope.
+  - Enabled storage `networkAcls.bypass=AzureServices` and re-tested indexing.
+  - Re-test still failed with the same 403.
+- **Learning**:
+  - This failure mode can persist even when role assignments and trusted-services bypass appear correct.
+  - Keep correlation IDs from `assetstore temporaryDataReference/createOrGet` and escalate with service diagnostics when all documented controls are in place.

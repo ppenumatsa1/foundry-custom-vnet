@@ -73,23 +73,96 @@ param deployModel bool = false
 @description('Deploy project capability host and post-capability-host role assignments')
 param deployCapabilityHost bool = false
 
-@description('VNet CIDR')
+@allowed([
+  'bootstrap'
+  'reuse'
+])
+@description('Network mode: bootstrap creates VNet/subnets; reuse uses existing VNet/subnets')
+param networkMode string = 'reuse'
+
+@description('Apply route-table updates to subnets (disabled by default to avoid in-use subnet mutation)')
+param configureSubnetRouting bool = false
+
+@description('VNet CIDR (used only when networkMode=bootstrap)')
 param vnetAddressPrefix string = '10.50.0.0/16'
 
-@description('Agent subnet CIDR')
+@description('Agent subnet CIDR (used only when networkMode=bootstrap)')
 param agentSubnetPrefix string = '10.50.5.0/24'
 
-@description('Private endpoint subnet CIDR')
+@description('Private endpoint subnet CIDR (used only when networkMode=bootstrap)')
 param peSubnetPrefix string = '10.50.1.0/24'
 
-@description('Management subnet CIDR')
+@description('Management subnet CIDR (used only when networkMode=bootstrap)')
 param managementSubnetPrefix string = '10.50.2.0/24'
 
-@description('Bastion subnet CIDR')
+@description('Bastion subnet CIDR (used only when networkMode=bootstrap)')
 param bastionSubnetPrefix string = '10.50.3.0/26'
 
-@description('Firewall subnet CIDR')
+@description('Firewall subnet CIDR (used only when networkMode=bootstrap)')
 param firewallSubnetPrefix string = '10.50.4.0/26'
+
+var isBootstrap = networkMode == 'bootstrap'
+
+module network 'modules/network/vnet.bicep' = if (isBootstrap) {
+  name: 'network-${shortSuffix}'
+  params: {
+    location: location
+    vnetName: vnetName
+    agentSubnetName: agentSubnetName
+    peSubnetName: peSubnetName
+    managementSubnetName: managementSubnetName
+    vnetAddressPrefix: vnetAddressPrefix
+    agentSubnetPrefix: agentSubnetPrefix
+    peSubnetPrefix: peSubnetPrefix
+    managementSubnetPrefix: managementSubnetPrefix
+    bastionSubnetPrefix: bastionSubnetPrefix
+    firewallSubnetPrefix: firewallSubnetPrefix
+  }
+}
+
+resource virtualNetwork 'Microsoft.Network/virtualNetworks@2024-05-01' existing = {
+  name: vnetName
+}
+
+resource agentSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
+  name: agentSubnetName
+  parent: virtualNetwork
+}
+
+resource peSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
+  name: peSubnetName
+  parent: virtualNetwork
+}
+
+resource managementSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
+  name: managementSubnetName
+  parent: virtualNetwork
+}
+
+resource bastionSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
+  name: 'AzureBastionSubnet'
+  parent: virtualNetwork
+}
+
+resource firewallSubnet 'Microsoft.Network/virtualNetworks/subnets@2024-05-01' existing = {
+  name: 'AzureFirewallSubnet'
+  parent: virtualNetwork
+}
+
+#disable-next-line BCP318
+var resolvedVnetId = isBootstrap ? network.outputs.vnetId : virtualNetwork.id
+#disable-next-line BCP318
+var resolvedPeSubnetId = isBootstrap ? network.outputs.peSubnetId : peSubnet.id
+#disable-next-line BCP318
+var resolvedBastionSubnetId = isBootstrap ? network.outputs.bastionSubnetId : bastionSubnet.id
+#disable-next-line BCP318
+var resolvedFirewallSubnetId = isBootstrap ? network.outputs.firewallSubnetId : firewallSubnet.id
+#disable-next-line BCP318
+var resolvedManagementSubnetId = isBootstrap ? network.outputs.managementSubnetId : managementSubnet.id
+#disable-next-line BCP318
+var resolvedVnetName = isBootstrap ? network.outputs.vnetNameOut : virtualNetwork.name
+#disable-next-line BCP318
+var resolvedAgentSubnetId = isBootstrap ? network.outputs.agentSubnetId : agentSubnet.id
 
 var shortSuffix = take(uniqueString(resourceGroup().id), 6)
 #disable-next-line BCP318
@@ -103,9 +176,9 @@ var gpt41Deployment = {
   capacity: 100
 }
 var gpt5Deployment = {
-  name: 'gpt-5'
-  modelName: 'gpt-5'
-  modelVersion: '2025-08-07'
+  name: 'gpt-5.2'
+  modelName: 'gpt-5.2'
+  modelVersion: ''
   modelPublisherFormat: 'OpenAI'
   skuName: 'GlobalStandard'
   capacity: 100
@@ -125,23 +198,6 @@ module validateExistingResources 'modules/data/validate-existing-resources.bicep
     aiSearchResourceId: aiSearchResourceId
     azureStorageAccountResourceId: azureStorageAccountResourceId
     azureCosmosDBAccountResourceId: azureCosmosDBAccountResourceId
-  }
-}
-
-module network 'modules/network/vnet.bicep' = {
-  name: 'network-${shortSuffix}'
-  params: {
-    location: location
-    vnetName: vnetName
-    agentSubnetName: agentSubnetName
-    peSubnetName: peSubnetName
-    managementSubnetName: managementSubnetName
-    vnetAddressPrefix: vnetAddressPrefix
-    agentSubnetPrefix: agentSubnetPrefix
-    peSubnetPrefix: peSubnetPrefix
-    managementSubnetPrefix: managementSubnetPrefix
-    bastionSubnetPrefix: bastionSubnetPrefix
-    firewallSubnetPrefix: firewallSubnetPrefix
   }
 }
 
@@ -173,8 +229,8 @@ module privateConnectivity 'modules/network/private-endpoints-dns.bicep' = {
   name: 'private-connectivity-${shortSuffix}'
   params: {
     location: location
-    vnetId: network.outputs.vnetId
-    peSubnetId: network.outputs.peSubnetId
+    vnetId: resolvedVnetId
+    peSubnetId: resolvedPeSubnetId
     aiFoundryAccountId: foundry.outputs.accountId
     storageAccountId: dependencies.outputs.storageId
     searchServiceId: dependencies.outputs.searchId
@@ -194,7 +250,7 @@ module bastion 'modules/network/bastion.bicep' = {
     location: location
     bastionName: '${namePrefix}-bas-${shortSuffix}'
     bastionPublicIpName: '${namePrefix}-bas-pip-${shortSuffix}'
-    bastionSubnetId: network.outputs.bastionSubnetId
+    bastionSubnetId: resolvedBastionSubnetId
   }
 }
 
@@ -204,35 +260,35 @@ module firewall 'modules/network/firewall-egress.bicep' = if (enableFirewall) {
     location: location
     firewallName: '${namePrefix}-afw-${shortSuffix}'
     firewallPublicIpName: '${namePrefix}-afw-pip-${shortSuffix}'
-    firewallSubnetId: network.outputs.firewallSubnetId
+    firewallSubnetId: resolvedFirewallSubnetId
     enableEgressRules: true
     sourceSubnetPrefixes: [
-      managementSubnetPrefix
-      agentSubnetPrefix
+      managementSubnet.properties.addressPrefix
+      agentSubnet.properties.addressPrefix
     ]
   }
 }
 
-module managementRouting 'modules/network/routing.bicep' = if (enableFirewall) {
+module managementRouting 'modules/network/routing.bicep' = if (enableFirewall && configureSubnetRouting) {
   name: 'routing-${shortSuffix}'
   params: {
      location: location
     routeTableName: '${namePrefix}-rt-management-${shortSuffix}'
-    vnetName: network.outputs.vnetNameOut
+    vnetName: resolvedVnetName
     subnetName: managementSubnetName
-    subnetPrefix: managementSubnetPrefix
+    subnetPrefix: managementSubnet.properties.addressPrefix
     firewallPrivateIp: firewallNextHopIp
   }
 }
 
-module agentRouting 'modules/network/routing.bicep' = if (enableFirewall) {
+module agentRouting 'modules/network/routing.bicep' = if (enableFirewall && configureSubnetRouting) {
   name: 'routing-agent-${shortSuffix}'
   params: {
       location: location
     routeTableName: '${namePrefix}-rt-agent-${shortSuffix}'
-    vnetName: network.outputs.vnetNameOut
+    vnetName: resolvedVnetName
     subnetName: agentSubnetName
-    subnetPrefix: agentSubnetPrefix
+    subnetPrefix: agentSubnet.properties.addressPrefix
     subnetDelegations: [
       {
         name: 'delegation-agent'
@@ -254,7 +310,7 @@ module jumpbox 'modules/network/jumpbox-vm.bicep' = {
     location: location
     vmName: '${namePrefix}-jump-${shortSuffix}'
     nicName: '${namePrefix}-jump-nic-${shortSuffix}'
-    subnetId: network.outputs.managementSubnetId
+    subnetId: resolvedManagementSubnetId
     adminUsername: jumpboxAdminUsername
     adminPassword: jumpboxAdminPassword
   }
@@ -391,7 +447,7 @@ module addProjectCapabilityHost 'modules/foundry/add-project-capability-host.bic
     accountName: foundry.outputs.accountNameOut
     projectName: foundry.outputs.projectNameOut
     projectCapHost: projectCapHost
-    customerSubnetId: network.outputs.agentSubnetId
+    customerSubnetId: resolvedAgentSubnetId
     cosmosDBConnection: dependencies.outputs.cosmosName
     azureStorageConnection: dependencies.outputs.storageName
     aiSearchConnection: dependencies.outputs.searchName

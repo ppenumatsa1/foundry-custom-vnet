@@ -1,4 +1,4 @@
-.PHONY: help venv recreate-venv install env run chat test clean
+.PHONY: help venv recreate-venv install env index run chat test clean
 
 VENV := .venv
 PY := $(VENV)/bin/python
@@ -9,6 +9,7 @@ help:
 	@echo "  recreate-venv  Recreate virtual environment"
 	@echo "  install        Install package in editable mode"
 	@echo "  env            Create .env from .env.example if missing"
+	@echo "  index          Upload invoice files and create/reuse vector store"
 	@echo "  run            Run one-shot question (QUESTION=\"...\")"
 	@echo "  chat           Start interactive chat mode"
 	@echo "  test           Run pytest"
@@ -27,6 +28,9 @@ install:
 
 env:
 	@if [ ! -f .env ]; then cp .env.example .env; fi
+
+index:
+	$(PY) scripts/index_invoices.py
 
 run:
 	$(PY) scripts/run_agent.py "$(QUESTION)"
