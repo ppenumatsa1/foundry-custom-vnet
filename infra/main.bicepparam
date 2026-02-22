@@ -31,6 +31,7 @@ param existingDnsZones = {
 
 param enableFirewall = true
 param deployModel = false
+param deployCapabilityHost = true
 param networkMode = 'reuse'
 param configureSubnetRouting = false
 

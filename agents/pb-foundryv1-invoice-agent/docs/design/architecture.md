@@ -23,7 +23,7 @@
 | scripts/index_invoices.py   |        | src/foundry_invoice_agent|
 | scripts/run_agent.py        |------->| /config.py (Pydantic)    |
 +---------------+-------------+        +---------------------------+
-                |                                  
+                |
                 | index                            | ask
                 v                                  v
 +-----------------------------------+    +-----------------------------------+

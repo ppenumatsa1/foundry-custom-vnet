@@ -234,3 +234,32 @@ This file captures key issues encountered during implementation and provisioning
 - **Learning**:
   - This failure mode can persist even when role assignments and trusted-services bypass appear correct.
   - Keep correlation IDs from `assetstore temporaryDataReference/createOrGet` and escalate with service diagnostics when all documented controls are in place.
+
+## 18) Search AAD auth mode mismatch caused Foundry IQ and vector-store 403s
+
+- **Symptom**:
+  - Foundry IQ showed: `Failed to fetch knowledge bases for connection <search-name>`.
+  - Invoice agent `make index` failed when creating vector store with Search permission error (`Forbidden`).
+- **Observed context**:
+  - Project connection to Search used `authType: AAD`.
+  - Both Foundry Project MI and jumpbox VM MI had Search roles at Search scope:
+    - `Search Service Contributor`
+    - `Search Index Data Contributor`
+  - Private DNS to Search PE resolved correctly from jumpbox.
+  - Embedding model deployment (`text-embedding-3-large`) existed.
+- **Root cause**:
+  - Azure AI Search was configured with `authOptions: apiKeyOnly`, which rejects AAD bearer-token data-plane calls even when RBAC roles are present.
+  - This produced misleading permission symptoms that looked like missing role assignments.
+- **Fix**:
+  - Updated Search configuration in IaC to enable AAD-compatible mode:
+    - `infra/modules/data/dependencies.bicep`
+    - `authOptions: { aadOrApiKey: { aadAuthFailureMode: 'http401WithBearerChallenge' } }`
+  - Re-ran `azd provision`.
+- **Validation**:
+  - Search config now reports `authOptions.aadOrApiKey`.
+  - Direct jumpbox MI token call to Search data-plane changed from `403` to `200` (`/indexes`).
+  - `make index` succeeded and created vector store.
+  - `make run` succeeded after clearing stale cached agent metadata on VM (`.foundry/agent.json`).
+- **Learning**:
+  - For private-network Foundry + Search with AAD project connections, Search must allow AAD auth mode (`aadOrApiKey`), not `apiKeyOnly`.
+  - If roles look correct but Search still returns 403, verify Search `authOptions` before chasing additional RBAC changes.

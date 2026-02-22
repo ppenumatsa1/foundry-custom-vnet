@@ -69,6 +69,11 @@ resource search 'Microsoft.Search/searchServices@2023-11-01' = if (!aiSearchExis
   }
   properties: {
     disableLocalAuth: false
+    authOptions: {
+      aadOrApiKey: {
+        aadAuthFailureMode: 'http401WithBearerChallenge'
+      }
+    }
     publicNetworkAccess: 'disabled'
     hostingMode: 'default'
     replicaCount: 1
