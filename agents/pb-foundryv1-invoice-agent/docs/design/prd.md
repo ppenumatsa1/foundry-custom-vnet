@@ -19,9 +19,3 @@ Users need a CLI-based invoice assistant that can index invoice files and answer
 - No M365/Teams channel integration.
 - No external document connectors beyond local `data/invoices/*.txt`.
 - No batch evaluation/orchestration pipeline in this project.
-
-## Deferred work (next phase)
-
-- Stale-cache resilience is deferred to a later phase.
-- Current cache behavior may fail if remote Foundry objects (agent/vector store) are deleted or changed out-of-band.
-- Planned follow-up: add cache preflight validation + auto-heal (recreate/refresh cache) before runtime operations.

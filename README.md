@@ -2,16 +2,7 @@
 
 Purpose
 
-- This Project demonstrates Foundry-standard provisioning flow that supports both Bring-Your-Own (BYO) VNet and creating a new VNet.
-- It includes two test agents to validate deployment and runtime behavior:
-  - Foundry v1 invoice agent for file upload, indexing, vector store, and grounded Q&A.
-  - Foundry v2 bing/web agent for live web-grounded query behavior.
-- Baseline reference: Microsoft private standard agent setup module for Search RBAC:
-  - https://github.com/microsoft-foundry/foundry-samples/blob/main/infrastructure/infrastructure-setup-bicep/15-private-network-standard-agent-setup/modules-network-secured/ai-search-role-assignments.bicep
-- This repo extends that baseline with `azd` provisioning workflow, Bastion access, and a private jumpbox VM.
-- Network posture used here:
-  - Foundry portal/control plane is reachable from internet.
-  - Data plane (agent runtime + Storage + Search + Cosmos) remains private behind private endpoints.
+- This folder demonstrates Foundry-standard provisioning flow that supports both Bring-Your-Own (BYO) VNet and creating a new VNet. It includes one test agent used to validate the deployment and runtime connectivity.
 
 Prerequisites
 
@@ -27,37 +18,14 @@ Provisioning summary
   - BYO VNet: supply `existingVnetResourceId` and ensure required subnets exist.
   - New VNet: leave `existingVnetResourceId` empty to create a new VNet and subnets.
 - High-level steps:
-  1. Configure `azd` environment variables.
+  1. Configure environment variables (or `.env`) with subscription, location and `JUMPBOX_ADMIN_PASSWORD` for temporary testing.
   2. Run `azd provision --preview` to see changes, then `azd provision` to apply.
   3. Validate the deployment from the bastion/jumpbox (private DNS, private endpoints, model endpoints).
-- See `infra/README.md` for full deploy details, templates, and `azd` usage: [infra/README.md](infra/README.md)
+- See `infra/README.md` for full deploy details, templates, and `azd` usage: [infra/README.md](../infra/README.md)
 
-`azd` variables to set (example)
+Test agent (simple smoke test)
 
-```bash
-azd init --template .
-azd env new dev
-
-# Required
-azd env set AZURE_SUBSCRIPTION_ID "<subscription-guid>"
-azd env set AZURE_LOCATION "eastus2"
-azd env set AZURE_RESOURCE_GROUP "rg-foundry-custom-vnet"
-azd env set JUMPBOX_ADMIN_PASSWORD "<strong-password>"
-
-# Recommended for first deploy / repeat deploy
-azd env set NETWORK_MODE "bootstrap"   # first run
-# azd env set NETWORK_MODE "reuse"      # repeat runs
-
-# Optional controls
-azd env set CONFIGURE_SUBNET_ROUTING "false"
-azd env set ENABLE_CAPABILITY_HOST_CLEANUP "false"
-```
-
-For full parameter and flag behavior, see [infra/README.md](infra/README.md).
-
-Agent validation (simple smoke test)
-
-- Use either agent below (or both) to verify Foundry account/runtime behavior from jumpbox.
+- A small agent is included to verify the Foundry account and model endpoint. The agent does a single request and prints the response.
 - Login to jumpbox via Bastion (from repo root):
 
   ```bash
@@ -83,26 +51,17 @@ Agent validation (simple smoke test)
   cd ~
   git clone https://github.com/ppenumatsa1/foundry-custom-vnet.git
   cd foundry-custom-vnet/agents/pb-foundry-bing-agent
-  python3 -m venv .venv
-  source .venv/bin/activate
-  python -m pip install --upgrade pip
-  python -m pip install -e .
-  python -m pytest -q
-  cp -n .env.example .env
+  make venv
+  make install
+  make test
+  make env
   # Set endpoint/agent values in .env
-  python scripts/run_agent.py "What is the capital of France? What is the weather there?"
+  make run QUESTION="What is the capital of France? What is the weather there?"
   ```
 
 - Validated output:
   - Unit tests: `3 passed`
   - Agent runtime: returns a valid capital answer and weather response (tool-enabled path)
-
-Agents catalog
-
-| Agent                        | Version | Primary test goal                                     | Runtime README                                                                             | Design docs                                                                                    |
-| ---------------------------- | ------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- |
-| `pb-foundryv1-invoice-agent` | v1      | File upload/indexing, vector store, invoice Q&A       | [agents/pb-foundryv1-invoice-agent/README.md](agents/pb-foundryv1-invoice-agent/README.md) | [agents/pb-foundryv1-invoice-agent/docs/design](agents/pb-foundryv1-invoice-agent/docs/design) |
-| `pb-foundry-bing-agent`      | v2      | Web-grounded queries and Foundry runtime connectivity | [agents/pb-foundry-bing-agent/README.md](agents/pb-foundry-bing-agent/README.md)           | [agents/pb-foundry-bing-agent/docs/design](agents/pb-foundry-bing-agent/docs/design)           |
 
 Security & best practices (short)
 
@@ -112,7 +71,7 @@ Security & best practices (short)
 
 Further reading
 
-- Infra and deployment details: [infra/README.md](infra/README.md) — see this for all Bicep modules, parameters and dry-run examples.
+- Infra and deployment details: `infra/README.md` — see this for all Bicep modules, parameters and dry-run examples.
 
 Disclaimer
 
@@ -121,3 +80,22 @@ Disclaimer
 License
 
 - This repository includes an open-source LICENSE in the project root. See `LICENSE`.
+
+This folder is reserved for agent code and runtime artifacts.
+
+Suggested layout and included agents:
+
+- `pb-foundry-bing-agent/` Foundry-only runtime (no M365 channel) — included in this repo.
+- `shared/` for common helpers
+- `tests/` for integration and smoke tests
+
+Included agents
+
+- `pb-foundry-bing-agent`: a Foundry-only test/runtime located under `agents/pb-foundry-bing-agent` — contains a small test agent, `scripts/run_agent.py`, and supporting runtime code. Use it to validate Foundry provisioning and runtime connectivity.
+
+Agents catalog
+
+| Scope     | Agent                        | Style        | Purpose                                                                    | README                                                                                     |
+| --------- | ---------------------------- | ------------ | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| This repo | `pb-foundry-bing-agent`      | prompt-based | Foundry-only runtime with web search grounding path.                       | [agents/pb-foundry-bing-agent/README.md](agents/pb-foundry-bing-agent/README.md)           |
+| This repo | `pb-foundryv1-invoice-agent` | prompt-based | Invoice Q&A over indexed documents using file search + JSON schema output. | [agents/pb-foundryv1-invoice-agent/README.md](agents/pb-foundryv1-invoice-agent/README.md) |
