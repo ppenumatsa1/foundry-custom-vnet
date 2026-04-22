@@ -222,6 +222,7 @@ module foundry 'modules/foundry/account-project.bicep' = {
     projectName: foundryProjectName
     projectDisplayName: foundryProjectDisplayName
     projectDescription: foundryProjectDescription
+    manageFoundryResources: isBootstrap
   }
 }
 
@@ -441,13 +442,11 @@ module jumpboxCosmosSqlRoleAssignment 'modules/identity/cosmosdb-sql-account-rol
   }
 }
 
-module addProjectCapabilityHost 'modules/foundry/add-project-capability-host.bicep' = if (deployCapabilityHost) {
-  name: 'capability-host-${shortSuffix}'
+module projectConnections 'modules/foundry/project-connections.bicep' = if (deployCapabilityHost) {
+  name: 'project-connections-${shortSuffix}'
   params: {
     accountName: foundry.outputs.accountNameOut
     projectName: foundry.outputs.projectNameOut
-    projectCapHost: projectCapHost
-    customerSubnetId: resolvedAgentSubnetId
     cosmosDBConnection: dependencies.outputs.cosmosName
     azureStorageConnection: dependencies.outputs.storageName
     aiSearchConnection: dependencies.outputs.searchName
@@ -462,6 +461,47 @@ module addProjectCapabilityHost 'modules/foundry/add-project-capability-host.bic
   ]
 }
 
+module accountCapabilityHost 'modules/foundry/account-capability-host.bicep' = if (deployCapabilityHost && isBootstrap) {
+  name: 'account-capability-host-${shortSuffix}'
+  params: {
+    accountName: foundry.outputs.accountNameOut
+    customerSubnetId: resolvedAgentSubnetId
+  }
+  dependsOn: [
+    projectConnections
+  ]
+}
+
+module projectCapabilityHostBootstrap 'modules/foundry/project-capability-host.bicep' = if (deployCapabilityHost && isBootstrap) {
+  name: 'project-capability-host-bootstrap-${shortSuffix}'
+  params: {
+    accountName: foundry.outputs.accountNameOut
+    projectName: foundry.outputs.projectNameOut
+    projectCapHost: projectCapHost
+    cosmosDBConnection: dependencies.outputs.cosmosName
+    azureStorageConnection: dependencies.outputs.storageName
+    aiSearchConnection: dependencies.outputs.searchName
+  }
+  dependsOn: [
+    accountCapabilityHost
+  ]
+}
+
+module projectCapabilityHostReuse 'modules/foundry/project-capability-host.bicep' = if (deployCapabilityHost && !isBootstrap) {
+  name: 'project-capability-host-reuse-${shortSuffix}'
+  params: {
+    accountName: foundry.outputs.accountNameOut
+    projectName: foundry.outputs.projectNameOut
+    projectCapHost: projectCapHost
+    cosmosDBConnection: dependencies.outputs.cosmosName
+    azureStorageConnection: dependencies.outputs.storageName
+    aiSearchConnection: dependencies.outputs.searchName
+  }
+  dependsOn: [
+    projectConnections
+  ]
+}
+
 module storageContainersRoleAssignment 'modules/identity/blob-storage-container-role-assignments.bicep' = if (deployCapabilityHost) {
   name: 'storage-containers-ra-${shortSuffix}'
   params: {
@@ -469,7 +509,8 @@ module storageContainersRoleAssignment 'modules/identity/blob-storage-container-
     aiProjectPrincipalId: foundry.outputs.projectPrincipalId
   }
   dependsOn: [
-    addProjectCapabilityHost
+    projectCapabilityHostBootstrap
+    projectCapabilityHostReuse
   ]
 }
 
@@ -481,7 +522,8 @@ module cosmosContainerRoleAssignments 'modules/identity/cosmos-container-role-as
     projectPrincipalId: foundry.outputs.projectPrincipalId
   }
   dependsOn: [
-    addProjectCapabilityHost
+    projectCapabilityHostBootstrap
+    projectCapabilityHostReuse
     storageContainersRoleAssignment
   ]
 }
@@ -493,4 +535,4 @@ output bastionId string = bastion.outputs.bastionHostId
 output jumpboxPrivateIp string = jumpbox.outputs.privateIp
 output privateEndpointIds array = privateConnectivity.outputs.privateEndpointIds
 #disable-next-line BCP318
-output capabilityHostName string = deployCapabilityHost ? addProjectCapabilityHost.outputs.projectCapHost : ''
+output capabilityHostName string = deployCapabilityHost ? (isBootstrap ? projectCapabilityHostBootstrap.outputs.projectCapHost : projectCapabilityHostReuse.outputs.projectCapHost) : ''

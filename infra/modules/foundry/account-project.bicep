@@ -13,7 +13,10 @@ param projectDisplayName string
 @description('Project description')
 param projectDescription string
 
-resource aiFoundryAccount 'Microsoft.CognitiveServices/accounts@2025-06-01' = {
+@description('When true, create/update account and project. When false, use existing account and project.')
+param manageFoundryResources bool = true
+
+resource aiFoundryAccount 'Microsoft.CognitiveServices/accounts@2025-06-01' = if (manageFoundryResources) {
   name: accountName
   location: location
   kind: 'AIServices'
@@ -37,7 +40,7 @@ resource aiFoundryAccount 'Microsoft.CognitiveServices/accounts@2025-06-01' = {
 }
 
 #disable-next-line BCP081
-resource aiFoundryProject 'Microsoft.CognitiveServices/accounts/projects@2025-06-01' = {
+resource aiFoundryProject 'Microsoft.CognitiveServices/accounts/projects@2025-06-01' = if (manageFoundryResources) {
   name: projectName
   parent: aiFoundryAccount
   location: location
@@ -50,11 +53,22 @@ resource aiFoundryProject 'Microsoft.CognitiveServices/accounts/projects@2025-06
   }
 }
 
-output accountId string = aiFoundryAccount.id
-output accountNameOut string = aiFoundryAccount.name
-output principalId string = aiFoundryAccount.identity.principalId
-output projectId string = aiFoundryProject.id
-output projectNameOut string = aiFoundryProject.name
+resource existingAiFoundryAccount 'Microsoft.CognitiveServices/accounts@2025-06-01' existing = if (!manageFoundryResources) {
+  name: accountName
+}
+
+#disable-next-line BCP081
+resource existingAiFoundryProject 'Microsoft.CognitiveServices/accounts/projects@2025-06-01' existing = if (!manageFoundryResources) {
+  name: projectName
+  parent: existingAiFoundryAccount
+}
+
+// Existing resources path avoids immutable property updates on previously provisioned accounts.
+output accountId string = manageFoundryResources ? aiFoundryAccount!.id : existingAiFoundryAccount!.id
+output accountNameOut string = manageFoundryResources ? aiFoundryAccount!.name : existingAiFoundryAccount!.name
+output principalId string = manageFoundryResources ? aiFoundryAccount!.identity.principalId : existingAiFoundryAccount!.identity.principalId
+output projectId string = manageFoundryResources ? aiFoundryProject!.id : existingAiFoundryProject!.id
+output projectNameOut string = manageFoundryResources ? aiFoundryProject!.name : existingAiFoundryProject!.name
 #disable-next-line BCP053
-output projectWorkspaceId string = aiFoundryProject.properties.internalId
-output projectPrincipalId string = aiFoundryProject.identity.principalId
+output projectWorkspaceId string = manageFoundryResources ? aiFoundryProject!.properties.internalId : existingAiFoundryProject!.properties.internalId
+output projectPrincipalId string = manageFoundryResources ? aiFoundryProject!.identity.principalId : existingAiFoundryProject!.identity.principalId

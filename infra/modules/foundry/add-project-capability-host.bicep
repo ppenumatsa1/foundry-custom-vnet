@@ -13,6 +13,9 @@ param accountCapHost string = 'caphostacct'
 @description('Customer agent subnet ARM resource ID for account capability host network placement')
 param customerSubnetId string
 
+@description('Whether to manage (create/update) the account capability host in this deployment')
+param manageAccountCapabilityHost bool = true
+
 @description('Cosmos connection name')
 param cosmosDBConnection string
 
@@ -92,7 +95,7 @@ resource project_connection_search 'Microsoft.CognitiveServices/accounts/project
   }
 }
 
-resource accountCapabilityHost 'Microsoft.CognitiveServices/accounts/capabilityHosts@2025-04-01-preview' = {
+resource accountCapabilityHost 'Microsoft.CognitiveServices/accounts/capabilityHosts@2025-04-01-preview' = if (manageAccountCapabilityHost) {
   name: accountCapHost
   parent: account
   properties: {
@@ -102,7 +105,7 @@ resource accountCapabilityHost 'Microsoft.CognitiveServices/accounts/capabilityH
 }
 
 #disable-next-line BCP081
-resource projectCapabilityHost 'Microsoft.CognitiveServices/accounts/projects/capabilityHosts@2025-04-01-preview' = {
+resource projectCapabilityHostManaged 'Microsoft.CognitiveServices/accounts/projects/capabilityHosts@2025-04-01-preview' = if (manageAccountCapabilityHost) {
   name: projectCapHost
   parent: project
   properties: {
@@ -123,4 +126,23 @@ resource projectCapabilityHost 'Microsoft.CognitiveServices/accounts/projects/ca
   ]
 }
 
-output projectCapHost string = projectCapabilityHost.name
+#disable-next-line BCP081
+resource projectCapabilityHostUnmanaged 'Microsoft.CognitiveServices/accounts/projects/capabilityHosts@2025-04-01-preview' = if (!manageAccountCapabilityHost) {
+  name: projectCapHost
+  parent: project
+  properties: {
+    #disable-next-line BCP037
+    capabilityHostKind: 'Agents'
+    vectorStoreConnections: [
+      aiSearchConnection
+    ]
+    storageConnections: [
+      azureStorageConnection
+    ]
+    threadStorageConnections: [
+      cosmosDBConnection
+    ]
+  }
+}
+
+output projectCapHost string = manageAccountCapabilityHost ? projectCapabilityHostManaged.name : projectCapabilityHostUnmanaged.name
